@@ -5,6 +5,6 @@ import SessionViewer from "../../js/components/SessionViewer.js";
 describe("SessionViewer", () => {
   it("renders header", () => {
     const wrapper = mount(SessionViewer);
-    expect(wrapper.text()).toContain("Session Visualizer");
+    expect(wrapper.text()).toMatch(/Session\s+Visualizer/);
   });
 });

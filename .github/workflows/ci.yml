@@ -16,5 +16,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: visualizer/package.json
       - run: npm install
+      - run: npx playwright install --with-deps
       - run: npm run test
       - run: npm run test:e2e
