@@ -14,6 +14,7 @@ Python scripts.
 A no-bundle Vue 3 app located in `./visualizer`.
 Components live under `js/components` and are wrapped in UMD format so Node
 tests can import them while the browser uses global Vue variables.
+Visual elements in this app should utilize the **PrimeVue UI Suite**.
 The entry file `visualize_session.html` can be opened directly via the
 `file://` scheme.
 
