@@ -1,15 +1,17 @@
 {
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run tests/unit",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
     "vitest": "^1.5.0",
-    "@vue/test-utils": "^2.5.3",
+    "vue": "^3.5.17",
+    "@vue/test-utils": "^2.4.6",
     "jsdom": "^24.0.0",
-    "playwright": "^1.45.0",
-    "http-server": "^14.2.0"
+    "playwright": "1.45.0",
+    "@playwright/test": "1.45.0",
+    "http-server": "^14.1.1"
   }
 }
