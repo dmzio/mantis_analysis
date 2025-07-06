@@ -2,18 +2,52 @@
 
 ## Dev Environment Tips
 
-There are two independent parts: Python data downloading and processing scripts and HTML/JS visualizer
+There are two independent parts: Python data downloading and the Visualizer web app.
+
+### References and sample data
+
+sample data file exist at `samples/sessions` - use during visualisation and analysis development
+
+`mantisweb_src` dir contains original MantisX web code, as a reference implementation, not for direct reuse.
+
 
 ### Data downloader
 
-Python scripts
+Python scripts.
 
 ### Visualizer
 
-Fully located in `./visualizer`
+A Vite powered Vue 3 app written in **TypeScript** located in `./visualizer`.
+Components live under `src/components` and are standard ES modules.
+Visual elements should utilize the **PrimeVue UI Suite**.
+Run the app through Vite's dev server or build it via `npm run build`.
 
-Local HTML/Javascript app, which loads sessions from given location and displays dashboards.
+```
+visualizer/
+├─ index.html
+├─ src/
+│   ├─ main.ts
+│   ├─ router.ts
+│   ├─ store.ts
+│   └─ components/
+│       └─ SessionViewer.ts
+├─ tests/
+│   ├─ unit/      ← Vitest + Vue Test Utils
+│   └─ e2e/       ← Playwright
+├─ vite.config.ts
+├─ vitest.config.ts
+└─ package.json
+```
 
-Created with VUE.js for local use, via opening of the index.html file.
-Testing (unit + component) done during CI 
+#### Running tests
 
+From the `visualizer` directory:
+
+```
+npm install
+npm run build       # generates `dist/`
+npm run test        # unit/component tests
+npm run test:e2e    # full browser checks
+```
+
+CI executes the same commands via `.github/workflows/ci.yml`.
