@@ -1,14 +1,14 @@
 import { defineComponent } from 'vue';
 import store from '../store';
+import SessionListing from './SessionListing';
 
 export default defineComponent({
   name: 'DashboardPage',
+  components: { SessionListing },
   template: `
       <div class="dashboard-page">
         <header>Sessions</header>
-        <ul>
-          <li v-for="(s, i) in store.sessions" :key="i">{{ s.session?.name || s.name || 'session '+(i+1) }}</li>
-        </ul>
+        <SessionListing :sessions="store.sessions" />
       </div>
     `,
   computed: {
