@@ -22,4 +22,5 @@ activate environment and run `python data_download.py`
 
 Located in `./visualizer`. It is a Vite based Vue 3 application written in TypeScript.
 Run `npm run dev` inside that directory to start the dev server or `npm run build` to produce the bundled site.
+You can also execute `make vis-run` from the project root which installs missing dependencies and launches the dev server in one step.
 
