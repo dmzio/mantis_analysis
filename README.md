@@ -7,6 +7,9 @@ Code allows:
 - in-depth analysis of session statistics and progress between sessions
 - visualization of training sessions and statistics via HTML
 
+## Setup
+
+Run `make setup` from the project root to install Python and Node dependencies.
 
 ## Architecture
 
