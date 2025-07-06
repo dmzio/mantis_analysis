@@ -14,6 +14,9 @@ Code allows:
 
 Python script, which connects to MantisX platform and downloads all available data.
 
+to run - fill config.json with your data,
+activate environment and run `python data_download.py`
+
 
 ### Visualizer
 
