@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import store from "../../js/store.js";
-global.APP = { store };
-import LandingPage from "../../js/components/LandingPage.js";
+import store from "../../src/store";
+import LandingPage from "../../src/components/LandingPage";
 
 describe("LandingPage", () => {
   it("renders header", () => {

@@ -321,3 +321,9 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 /data/sessions/
+
+# Node
+node_modules/
+visualizer/node_modules/
+visualizer/package-lock.json
+visualizer/test-results/
