@@ -20,7 +20,6 @@ activate environment and run `python data_download.py`
 
 ### Visualizer
 
-Fully located in `./visualizer`
-
-Local HTML/Javascript app, which loads sessions from given location and displays dashboards.
+Located in `./visualizer`. It is a Vite based Vue 3 application written in TypeScript.
+Run `npm run dev` inside that directory to start the dev server or `npm run build` to produce the bundled site.
 
