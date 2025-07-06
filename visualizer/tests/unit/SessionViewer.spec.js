@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import SessionViewer from "../../js/components/SessionViewer.js";
+import SessionViewer from "../../src/components/SessionViewer";
 
 describe("SessionViewer", () => {
   it("renders header", () => {

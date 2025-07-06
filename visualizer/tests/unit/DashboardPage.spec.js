@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import store from "../../js/store.js";
-global.APP = { store };
-import DashboardPage from "../../js/components/DashboardPage.js";
+import store from "../../src/store";
+import DashboardPage from "../../src/components/DashboardPage";
 
 describe("DashboardPage", () => {
   it("uses provided store", () => {
