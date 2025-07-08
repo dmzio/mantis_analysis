@@ -27,7 +27,7 @@ export default defineComponent({
     }
   },
   template: `
-    <DataTable :value="sessions" data-testid="session-table">
+    <DataTable :value="sessions" data-testid="session-table" scrollable scrollHeight="flex">
       <Column field="session.date" header="Date" />
       <Column header="Shots" :body="shotCount" />
       <Column field="session.pk" header="PK" />
