@@ -15,7 +15,7 @@ export default defineComponent({
   setup(props) {
     const svgRef = ref<SVGSVGElement | null>(null);
     const playing = ref(false);
-    const progress = ref(0);
+    const progress = ref(1);
     let timer: d3.Timer | null = null;
     let segsInfo: any[] = [];
 
@@ -48,7 +48,9 @@ export default defineComponent({
       svg.selectAll('*').remove();
       const root = svg.append('g');
       
-      const rings = d3.range(1, 6).map(i => (i / 5) * (size / 2));
+      const ringDeg = [1/16, 3/16, 5/16, 7/16, 9/16];
+      const maxDeg = ringDeg[ringDeg.length - 1];
+      const rings = ringDeg.map(d => (d / maxDeg) * (size / 2));
       root.selectAll('circle.ring').data(rings).enter().append('circle')
         .attr('class', 'ring').attr('cx', size / 2).attr('cy', size / 2)
         .attr('r', d => d).attr('fill', 'none')
@@ -60,12 +62,11 @@ export default defineComponent({
 
       segsInfo = [];
       props.shots.forEach(shot => {
-        const start = shot.hold_index ?? 0;
-        const coords = toRelativeCoords(shot).slice(start);
-        const scale = makeScale(coords.flat(), size);
+        const coords = toRelativeCoords(shot);
+        const pullIdx = shot.pull_index ?? 0;
+        const shotIdx = shot.shot_index ?? coords.length - 1;
+        const scale = makeScale(coords.slice(pullIdx, shotIdx + 1).flat(), size);
         const scaled = coords.map(([x, y]) => [scale(x) + size / 2, scale(y) + size / 2]);
-        const pullIdx = (shot.pull_index ?? start) - start;
-        const shotIdx = (shot.shot_index ?? scaled.length - 1 + start) - start;
         const segs = splitSegments(scaled, { pull_index: pullIdx, shot_index: shotIdx });
         const line = d3.line().curve(d3.curveBasis);
         const holdPath = root.append('path').attr('d', line(segs.hold)!)
@@ -89,7 +90,7 @@ export default defineComponent({
                         pullLen: (pullPath.node() as SVGPathElement).getTotalLength(),
                         recoilLen: (recoilPath.node() as SVGPathElement).getTotalLength() });
       });
-      progress.value = 0;
+      progress.value = 1;
       updatePaths();
     }
 
@@ -120,8 +121,8 @@ export default defineComponent({
   template: `
     <div class="trace-visualizer">
       <svg ref="svgRef" style="width:100%;height:400px"></svg>
-      <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;">
-        <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" />
+      <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;width:100%;">
+        <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" style="flex:1;" />
         <Button @click="play" class="p-button-sm" data-testid="play-btn">
           <template #icon><PlayIcon /></template>
         </Button>
