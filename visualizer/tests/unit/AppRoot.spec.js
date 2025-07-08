@@ -7,7 +7,7 @@ import router from "../../src/router";
 describe("AppRoot", () => {
   it("resets data and redirects", () => {
     store.folder = "data";
-    store.sessions = [{}, {}];
+    store.sessions = { 1: {}, 2: {} };
     localStorage.setItem("data_folder", "data");
     const push = vi.fn();
     router.push = push;
@@ -19,7 +19,7 @@ describe("AppRoot", () => {
     });
     (wrapper.vm).reset();
     expect(store.folder).toBe("");
-    expect(store.sessions.length).toBe(0);
+    expect(Object.keys(store.sessions).length).toBe(0);
     expect(localStorage.getItem("data_folder")).toBeNull();
     expect(push).toHaveBeenCalledWith("/");
   });

@@ -15,13 +15,17 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const router = useRouter();
+    if (!Object.keys(store.sessions).length) {
+      router.push('/');
+      const goDash = () => router.push('/dashboard');
+      return { session: {}, shots: [], goDash };
+    }
     const pk = Number(route.params.pk);
     const session =
-      store.sessions.find((s: any) => (s.session?.pk ?? s.pk) === pk) || {
-        session: { shots: [] },
+      (store.sessions as Record<number, any>)[pk] || {
         shots: []
       };
-    const shots: any[] = session.session?.shots || session.shots || [];
+    const shots: any[] = session.shots || [];
     const goDash = () => router.push('/dashboard');
     return { session, shots, goDash };
   },

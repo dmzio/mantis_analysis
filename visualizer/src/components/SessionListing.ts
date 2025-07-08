@@ -19,18 +19,18 @@ export default defineComponent({
   },
   methods: {
     shotCount(row: any) {
-      const shots = row.session?.shots || row.shots || [];
+      const shots = row.shots || [];
       return Array.isArray(shots) ? shots.length : 0;
     },
     toDetails(row: any) {
-      this.router.push(`/session/${row.session?.pk || row.pk}`);
+      this.router.push(`/session/${row.pk}`);
     }
   },
   template: `
     <DataTable :value="sessions" data-testid="session-table" scrollable scrollHeight="flex">
-      <Column field="session.date" header="Date" />
+      <Column field="date" header="Date" />
       <Column header="Shots" :body="shotCount" />
-      <Column field="session.pk" header="PK" />
+      <Column field="pk" header="PK" />
       <Column header="">
         <template #body="slotProps">
           <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">

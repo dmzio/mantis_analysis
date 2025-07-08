@@ -7,7 +7,7 @@ import { vi } from "vitest";
 
 describe("SessionListing", () => {
   it("renders session data", () => {
-    const sessions = [{ session: { date: "2024-01-01", pk: 1, shots: [1, 2, 3] } }];
+    const sessions = [{ date: "2024-01-01", pk: 1, shots: [1, 2, 3] }];
     const wrapper = mount(SessionListing, { props: { sessions }, global: { plugins: [PrimeVue, router] } });
     expect(wrapper.text()).toMatch(/2024-01-01/);
     expect(wrapper.vm.shotCount(sessions[0])).toBe(3);
@@ -15,7 +15,7 @@ describe("SessionListing", () => {
   });
 
   it("navigates to details", async () => {
-    const sessions = [{ session: { date: "2024-01-01", pk: 2, shots: [] } }];
+    const sessions = [{ date: "2024-01-01", pk: 2, shots: [] }];
     const push = vi.fn();
     router.push = push;
     const wrapper = mount(SessionListing, { props: { sessions }, global: { plugins: [PrimeVue, router] } });
