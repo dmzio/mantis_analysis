@@ -1,8 +1,21 @@
 Files in this directory are copies of source files from https://train.mantisx.com
 all copyrights belong to MantisX developers.
-These files shouldn't be directly reused in other system or components without permission.These files placed here only as a reference examples of how API data may be handled.
+These files shouldn't be directly reused in other system or components without permission.
+These files placed here only as a reference examples of how API data may be handled.
 
-## Notes on Data Processing
+## Some logic excerpts from these files and MantisX docs
+
+### From docs
+
+[What do the red rings in the trace view mean?](https://mantisx.com/pages/faq) - 
+Each red circle of the simulated target represents a certain degree of movement away from the point of impact for a shot. 
+By locating the white X and identifying the nearest ring, 
+you can estimate the degree of movement that occurred to cause the point of impact to deviate from the point of aim. 
+The center ring of the simulated target in the Trace View represents 1/16th degree (3.75 MOA) of deviation. 
+Each ring after the first represents 1/8th degree (7.5 MOA) of deviation.
+
+
+###  Notes on Data Processing in JS
 
 While inspecting the original sources a few important details were found about
 how raw JSON shot data is converted into graphics and statistics:
