@@ -40,5 +40,9 @@ how raw JSON shot data is converted into graphics and statistics:
   `x = 330 + 100 * scale * (yaw - center.x)` and a similar formula for `y` so
   that the trace fits the display area【F:mantisweb_src/pistol.js†L692-L699】.
 
-These rules influence both the generated statistics and how traces are shown in
-the UI.  They are preserved in the rewritten components in this repository.
+* **Trace trimming for scaling** – the scale factor is computed from the
+  deviation between `pull_index` and `shot_index` only, effectively ignoring
+  earlier aiming movement.  This prevents small trigger pulls from appearing too
+  tiny when plotted【F:mantisweb_src/pistol.js†L895-L905】.
+
+These rules influence both the generated statistics and how traces are shown inthe UI.  They are preserved in the rewritten components in this repository.
