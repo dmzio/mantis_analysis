@@ -10,6 +10,11 @@ Code allows:
 ## Setup
 
 Run `make setup` from the project root to install Python and Node dependencies.
+If you encounter deprecation warnings during setup or while running development
+and test scripts, resolve them as soon as possible. Keeping dependencies free
+from deprecated options ensures smoother upgrades. Always check that proposed
+changes, such as adjusting environment variables, actually provide a benefit
+before committing them.
 
 ## Architecture
 
