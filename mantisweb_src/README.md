@@ -8,11 +8,12 @@ These files placed here only as a reference examples of how API data may be hand
 ### From docs
 
 [What do the red rings in the trace view mean?](https://mantisx.com/pages/faq) - 
-Each red circle of the simulated target represents a certain degree of movement away from the point of impact for a shot. 
-By locating the white X and identifying the nearest ring, 
-you can estimate the degree of movement that occurred to cause the point of impact to deviate from the point of aim. 
-The center ring of the simulated target in the Trace View represents 1/16th degree (3.75 MOA) of deviation. 
+Each red circle of the simulated target represents a certain degree of movement away from the point of impact for a shot.
+By locating the white X and identifying the nearest ring,
+you can estimate the degree of movement that occurred to cause the point of impact to deviate from the point of aim.
+The center ring of the simulated target in the Trace View represents 1/16th degree (3.75 MOA) of deviation.
 Each ring after the first represents 1/8th degree (7.5 MOA) of deviation.
+When recreating the target graphic in this repo the radii follow the sequence `1/16, 3/16, 5/16, 7/16` and `9/16` of a degree so that the outermost ring matches the largest deviation plotted.
 
 
 ###  Notes on Data Processing in JS

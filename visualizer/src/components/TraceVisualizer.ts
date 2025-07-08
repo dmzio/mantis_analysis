@@ -48,7 +48,9 @@ export default defineComponent({
       svg.selectAll('*').remove();
       const root = svg.append('g');
       
-      const rings = d3.range(1, 6).map(i => (i / 5) * (size / 2));
+      const ringDeg = [1/16, 3/16, 5/16, 7/16, 9/16];
+      const maxDeg = ringDeg[ringDeg.length - 1];
+      const rings = ringDeg.map(d => (d / maxDeg) * (size / 2));
       root.selectAll('circle.ring').data(rings).enter().append('circle')
         .attr('class', 'ring').attr('cx', size / 2).attr('cy', size / 2)
         .attr('r', d => d).attr('fill', 'none')
@@ -61,10 +63,10 @@ export default defineComponent({
       segsInfo = [];
       props.shots.forEach(shot => {
         const coords = toRelativeCoords(shot);
-        const scale = makeScale(coords.flat(), size);
-        const scaled = coords.map(([x, y]) => [scale(x) + size / 2, scale(y) + size / 2]);
         const pullIdx = shot.pull_index ?? 0;
-        const shotIdx = shot.shot_index ?? scaled.length - 1;
+        const shotIdx = shot.shot_index ?? coords.length - 1;
+        const scale = makeScale(coords.slice(pullIdx, shotIdx + 1).flat(), size);
+        const scaled = coords.map(([x, y]) => [scale(x) + size / 2, scale(y) + size / 2]);
         const segs = splitSegments(scaled, { pull_index: pullIdx, shot_index: shotIdx });
         const line = d3.line().curve(d3.curveBasis);
         const holdPath = root.append('path').attr('d', line(segs.hold)!)

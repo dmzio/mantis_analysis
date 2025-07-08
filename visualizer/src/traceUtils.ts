@@ -24,7 +24,7 @@ export function makeScale(values: number[], size: number, fixed = false) {
     return (v: number) => (v / maxDeg) * (size / 2);
   }
   const extent = d3.extent(values.map(Math.abs)) as [number, number];
-  const k = (size / 2) / (extent[1] || 1e-3);
+  const k = (size / 2) / ((extent[1] ?? 0) + 0.1);
   return (v: number) => v * k;
 }
 
