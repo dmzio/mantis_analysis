@@ -29,4 +29,10 @@ describe('TraceVisualizer', () => {
     const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
     expect(wrapper.find('[data-seg="pull"]').exists()).toBe(true);
   });
+
+  it('shows datapoints', () => {
+    const shots = [{ pitch: [0,0], yaw: [0,0], sample_rate: 100 }];
+    const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
+    expect(wrapper.find('[data-point="hold"]').exists()).toBe(true);
+  });
 });
