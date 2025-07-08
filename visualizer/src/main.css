@@ -3,7 +3,8 @@
       --ring: #662222;
       --cross: #444;
       --trace-hold: #4aa3ff;   /* blue – hold phase */
-      --trace-trigger: #ff3366;/* red  – trigger & recoil */
+      --trace-pull: #f9dc5c;   /* yellow – trigger pull */
+      --trace-trigger: #ff3366;/* red  – recoil */
       --marker-pull: #ffeb3b;  /* yellow dot */
       --marker-shot: #ffffff;  /* white X  */
     }
