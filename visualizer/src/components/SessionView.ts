@@ -15,9 +15,14 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const router = useRouter();
+    if (!Object.keys(store.sessions).length) {
+      router.push('/');
+      const goDash = () => router.push('/dashboard');
+      return { session: {}, shots: [], goDash };
+    }
     const pk = Number(route.params.pk);
     const session =
-      store.sessions.find((s: any) => (s.session?.pk ?? s.pk) === pk) || {
+      (store.sessions as Record<number, any>)[pk] || {
         session: { shots: [] },
         shots: []
       };

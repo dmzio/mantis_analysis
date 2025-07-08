@@ -23,7 +23,7 @@ export default defineComponent({
       const prefix = (files[0].webkitRelativePath || '').split('/')[0];
       store.folder = prefix;
       localStorage.setItem('data_folder', prefix);
-      store.sessions = [];
+      store.sessions = {};
       let remain = files.length;
       const done = () => { if (--remain === 0) router.push('/dashboard'); };
       files.forEach(f => {
@@ -31,7 +31,11 @@ export default defineComponent({
         const reader = new FileReader();
         reader.onload = ev => {
           try {
-            store.sessions.push(JSON.parse((ev.target as FileReader).result as string));
+            const obj = JSON.parse((ev.target as FileReader).result as string);
+            const id = obj.session?.pk ?? obj.pk;
+            if (id !== undefined) {
+              (store.sessions as Record<number, any>)[id] = obj;
+            }
           } catch (err) {
             console.error(err);
           }

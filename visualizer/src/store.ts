@@ -1,7 +1,7 @@
 import { reactive } from 'vue';
 
 const store = reactive({
-  sessions: [] as any[],
+  sessions: {} as Record<number, any>,
   folder:
     typeof localStorage === 'undefined'
       ? ''
@@ -9,7 +9,7 @@ const store = reactive({
 });
 
 export function resetStore() {
-  store.sessions = [];
+  store.sessions = {};
   store.folder = '';
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('data_folder');
