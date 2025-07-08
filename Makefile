@@ -3,7 +3,7 @@
 setup: setup-python setup-vis
 
 setup-python:
-	uv pip install -r uv.lock
+	uv sync
 
 setup-vis:
 	cd visualizer \
