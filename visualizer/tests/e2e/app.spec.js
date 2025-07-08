@@ -38,9 +38,6 @@ test("dashboard lists sessions", async ({ page }) => {
   const stored = await page.evaluate(() => localStorage.getItem('data_folder'));
   expect(stored).not.toBeNull();
 
-  // revisit home should redirect to dashboard
-  // (skipped due to server lacking history fallback)
-
   // reset via menubar
   await page.locator('ul[role="menubar"] >> text=Reset data').click();
   await expect(page).toHaveURL('http://localhost:8765/');

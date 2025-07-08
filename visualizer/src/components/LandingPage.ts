@@ -11,9 +11,7 @@ export default defineComponent({
       </div>
     `,
   mounted() {
-    if (store.folder) {
-      router.push('/dashboard');
-    }
+
   },
   methods: {
     choose(e: Event) {
