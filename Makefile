@@ -6,11 +6,11 @@ setup-python:
 	uv sync
 
 setup-vis:
-       cd visualizer \
-       && npm install --no-fund --no-audit \
-       && npx playwright install --with-deps
+	cd visualizer \
+	&& npm install --no-fund --no-audit \
+	&& npx playwright install --with-deps
 
 vis-run:
-       cd visualizer \
-       && npm install --no-fund --no-audit \
-       && npm run dev
+	cd visualizer \
+	&& npm install --no-fund --no-audit \
+	&& npm run dev
