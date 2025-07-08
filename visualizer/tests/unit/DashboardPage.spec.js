@@ -12,7 +12,7 @@ describe("DashboardPage", () => {
   });
 
   it("renders session listing", () => {
-    store.sessions = { 1: { session: { date: "2024-01-01", pk: 1, shots: [1] } } };
+    store.sessions = { 1: { date: "2024-01-01", pk: 1, shots: [1] } };
     const wrapper = mount(DashboardPage, { global: { provide: { store } } });
     expect(wrapper.findComponent(SessionListing).exists()).toBe(true);
   });

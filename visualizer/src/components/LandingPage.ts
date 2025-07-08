@@ -34,7 +34,7 @@ export default defineComponent({
             const obj = JSON.parse((ev.target as FileReader).result as string);
             const id = obj.session?.pk ?? obj.pk;
             if (id !== undefined) {
-              (store.sessions as Record<number, any>)[id] = obj;
+              (store.sessions as Record<number, any>)[id] = obj.session || obj;
             }
           } catch (err) {
             console.error(err);

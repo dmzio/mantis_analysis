@@ -23,10 +23,9 @@ export default defineComponent({
     const pk = Number(route.params.pk);
     const session =
       (store.sessions as Record<number, any>)[pk] || {
-        session: { shots: [] },
         shots: []
       };
-    const shots: any[] = session.session?.shots || session.shots || [];
+    const shots: any[] = session.shots || [];
     const goDash = () => router.push('/dashboard');
     return { session, shots, goDash };
   },

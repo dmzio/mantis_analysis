@@ -5,7 +5,7 @@ import router from "../../src/router";
 import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
 
-store.sessions = { 1: { session: { pk: 1, shots: [{pk:11, score:"95", problem:"OK", pitch:[0,0], yaw:[0,0]}] } } };
+store.sessions = { 1: { pk: 1, shots: [{pk:11, score:"95", problem:"OK", pitch:[0,0], yaw:[0,0]}] } };
 
 beforeEach(() => {
   if (typeof window !== 'undefined') {
