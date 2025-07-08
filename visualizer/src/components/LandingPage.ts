@@ -10,6 +10,11 @@ export default defineComponent({
         <input type="file" webkitdirectory multiple @change="choose" />
       </div>
     `,
+  mounted() {
+    if (store.folder) {
+      router.push('/dashboard');
+    }
+  },
   methods: {
     choose(e: Event) {
       const input = e.target as HTMLInputElement;
