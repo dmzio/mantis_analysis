@@ -5,7 +5,7 @@ import router from "../../src/router";
 import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
 
-store.sessions = [{ session: { pk: 1, shots: [{pk:11, score:"95", problem:"OK"}] } }];
+store.sessions = [{ session: { pk: 1, shots: [{pk:11, score:"95", problem:"OK", pitch:[0,0], yaw:[0,0]}] } }];
 
 describe("SessionView", () => {
   it("shows stats and shots", async () => {
