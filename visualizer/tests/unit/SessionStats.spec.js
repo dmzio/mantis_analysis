@@ -1,7 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PrimeVue from 'primevue/config';
 import SessionStats from '../../src/components/SessionStats';
+
+beforeEach(() => {
+  if (typeof window !== 'undefined') {
+    window.SVGElement.prototype.getTotalLength = () => 100;
+  }
+});
 
 describe('SessionStats', () => {
   it('shows total shots and visualizer', () => {

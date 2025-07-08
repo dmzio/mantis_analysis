@@ -29,11 +29,12 @@ export function makeScale(values: number[], size: number, fixed = false) {
 }
 
 export function splitSegments(coords: [number, number][], shot: ShotData) {
-  const holdEnd = shot.pull_index ?? 0;
+  const pullIdx = shot.pull_index ?? 0;
   const shotIdx = shot.shot_index ?? coords.length - 1;
   return {
-    hold: coords.slice(0, holdEnd + 1),
-    trigger: coords.slice(holdEnd, shotIdx + 1),
+    hold: coords.slice(0, pullIdx + 1),
+    pull: coords.slice(pullIdx, shotIdx + 1),
+    recoil: coords.slice(shotIdx),
     shotIdx
   };
 }
