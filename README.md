@@ -32,3 +32,8 @@ Located in `./visualizer`. It is a Vite based Vue 3 application written in TypeS
 Run `npm run dev` inside that directory to start the dev server or `npm run build` to produce the bundled site.
 You can also execute `make vis-run` from the project root which installs missing dependencies and launches the dev server in one step.
 
+The Visualizer uses PrimeVue's **styled** theming. The bundled site loads the
+`lara-dark-blue` preset for a dark appearance. PrimeVue allows customizing the
+dark mode selector; see their [Dark Mode guide](https://primevue.org/theming/styled/#darkmode)
+for details.
+
