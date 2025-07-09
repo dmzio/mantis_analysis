@@ -18,10 +18,13 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .layout-wrapper {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .layout-topbar {
@@ -45,15 +48,18 @@ body {
 .layout-main-container {
   margin-left: 250px;
   padding-top: 3.5rem;
-  min-height: 100vh;
+  height: calc(100vh - 3.5rem);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .layout-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .p-menubar, .main-menubar {
@@ -71,6 +77,7 @@ body {
   flex-direction: column;
   height: 100%;
   padding: 1rem;
+  min-height: 0;
 }
 
 .dashboard-page,
@@ -88,6 +95,7 @@ header {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .session-stats h3 {
@@ -101,6 +109,7 @@ header {
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  min-height: 0;
 }
 
 .trace-visualizer svg {
@@ -119,6 +128,19 @@ header {
 
 .stat-summary {
   margin: 0 0 0.5rem;
+}
+
+.session-view .p-tabview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.session-view .p-tabview-panels,
+.session-view .p-tabview-panel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 
