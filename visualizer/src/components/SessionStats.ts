@@ -10,7 +10,7 @@ export default defineComponent({
   template: `
     <div class="session-stats">
       <h3>Session Stats</h3>
-      <p>Total shots: {{ shots.length }}</p>
+      <p class="stat-summary">Total shots: {{ shots.length }}</p>
       <TraceVisualizer :shots="shots" />
     </div>
   `

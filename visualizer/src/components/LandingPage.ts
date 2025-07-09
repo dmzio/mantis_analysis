@@ -11,7 +11,9 @@ export default defineComponent({
       </div>
     `,
   mounted() {
-
+    if (store.folder && Object.keys(store.sessions).length) {
+      router.push('/dashboard');
+    }
   },
   methods: {
     choose(e: Event) {

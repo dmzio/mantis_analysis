@@ -10,12 +10,24 @@ describe("LandingPage", () => {
     expect(wrapper.text()).toMatch(/pick folder with session dumps/);
   });
 
-  it("redirects to dashboard if folder already set", () => {
+  it("redirects to dashboard if folder and sessions loaded", () => {
     store.folder = "data";
+    store.sessions = { 1: { pk: 1 } };
     const push = vi.fn();
     router.push = push;
     mount(LandingPage, { global: { provide: { store } } });
     expect(push).toHaveBeenCalledWith("/dashboard");
+    store.folder = "";
+    store.sessions = {};
+  });
+
+  it("does not redirect when sessions missing", () => {
+    store.folder = "data";
+    store.sessions = {};
+    const push = vi.fn();
+    router.push = push;
+    mount(LandingPage, { global: { provide: { store } } });
+    expect(push).not.toHaveBeenCalled();
     store.folder = "";
   });
 });

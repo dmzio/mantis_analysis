@@ -35,4 +35,11 @@ describe('TraceVisualizer', () => {
     const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
     expect(wrapper.find('[data-point="hold"]').exists()).toBe(true);
   });
+
+  it('svg fills container', () => {
+    const shots = [{ pitch: [0,0], yaw: [0,0] }];
+    const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
+    const svg = wrapper.find('[data-testid="trace-svg"]');
+    expect(svg.attributes('class')).toContain('trace-svg');
+  });
 });
