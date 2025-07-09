@@ -20,17 +20,43 @@ body {
   flex-direction: column;
 }
 
-#app-layout {
+.layout-wrapper {
+  min-height: 100vh;
+}
+
+.layout-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.layout-sidebar {
+  position: fixed;
+  top: 3.5rem;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.layout-main-container {
+  margin-left: 250px;
+  padding-top: 3.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-main {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.p-menubar {
-  width: 100%;
-}
-
-.main-menubar {
+.p-menubar, .main-menubar {
   width: 100%;
 }
 
@@ -42,18 +68,9 @@ body {
 .session-view {
   flex: 1;
   display: flex;
+  flex-direction: column;
   height: 100%;
-}
-
-.session-view .left {
-  width: 500px;
-  overflow-y: auto;
-}
-
-.session-view .right {
-  flex: 1;
   padding: 1rem;
-  overflow-y: hidden;
 }
 
 .dashboard-page,
@@ -83,11 +100,13 @@ header {
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow: hidden;
 }
 
 .trace-visualizer svg {
   flex: 1 1 auto;
   width: 100%;
+  height: 100%;
 }
 
 .trace-controls {

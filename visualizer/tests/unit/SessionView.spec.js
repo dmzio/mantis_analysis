@@ -4,6 +4,7 @@ import PrimeVue from "primevue/config";
 import router from "../../src/router";
 import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
+import SessionSidebar from "../../src/components/SessionSidebar";
 
 store.sessions = { 1: { pk: 1, shots: [{pk:11, score:"95", problem:"OK", pitch:[0,0], yaw:[0,0]}] } };
 
@@ -14,11 +15,16 @@ beforeEach(() => {
 });
 
 describe("SessionView", () => {
-  it("shows stats and shots", async () => {
+  it("shows stats", async () => {
     await router.push('/session/1');
     const wrapper = mount(SessionView, { global: { plugins: [PrimeVue, router] } });
-    expect(wrapper.find('[data-testid="shot-table"]').exists()).toBe(true);
     expect(wrapper.text()).toMatch(/Total shots:\s*1/);
+  });
+
+  it("renders sidebar with shot list", async () => {
+    await router.push('/session/1');
+    const wrapper = mount(SessionSidebar, { global: { plugins: [PrimeVue, router] } });
+    expect(wrapper.find('[data-testid="shot-table"]').exists()).toBe(true);
   });
 
   it("redirects to landing when empty", async () => {

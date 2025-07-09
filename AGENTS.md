@@ -20,6 +20,8 @@ Python scripts.
 A Vite powered Vue 3 app written in **TypeScript** located in `./visualizer`.
 Components live under `src/components` and are standard ES modules.
 Visual elements should utilize the **PrimeVue UI Suite**.
+The app's layout is based on the free **Sakai** PrimeVue template. Use it for
+all themes with a topbar (menubar), left sidebar and a main container.
 All icons must come from the PrimeVue [Material Design icon set](https://primevue.org/customicons/#material) using the `useCustomIcon` helper. Other widgets (tables, buttons, etc.) should use the PrimeVue component equivalents whenever possible.
 Run the app through Vite's dev server or build it via `npm run build`.
 

@@ -18,9 +18,16 @@ export default defineComponent({
     }
   },
   template: `
-    <div id="app-layout">
-      <Menubar v-if="$route.path !== '/'" :model="items" class="main-menubar" />
-      <router-view class="view-container" />
+    <div class="layout-wrapper">
+      <div class="layout-topbar" v-if="$route.path !== '/'">
+        <Menubar :model="items" class="main-menubar" />
+      </div>
+      <router-view name="sidebar" class="layout-sidebar" />
+      <div class="layout-main-container">
+        <div class="layout-main">
+          <router-view class="view-container" />
+        </div>
+      </div>
     </div>
   `
 });
