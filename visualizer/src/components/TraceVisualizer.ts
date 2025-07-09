@@ -182,9 +182,9 @@ export default defineComponent({
   },
   template: `
     <div class="trace-visualizer">
-      <svg ref="svgRef" style="width:100%;height:400px"></svg>
-      <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;width:100%;">
-        <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" style="flex:1;" />
+      <svg ref="svgRef" class="trace-svg" data-testid="trace-svg"></svg>
+      <div class="trace-controls">
+        <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" class="timeline" />
         <Button @click="play" class="p-button-sm" data-testid="play-btn">
           <template #icon><PlayIcon /></template>
         </Button>
