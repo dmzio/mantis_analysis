@@ -5,6 +5,12 @@ import AppRoot from './App';
 import './main.css';
 
 const app = createApp(AppRoot);
-app.use(PrimeVue);
+app.use(PrimeVue, {
+  theme: {
+    options: {
+      darkModeSelector: '.p-dark'
+    }
+  }
+});
 app.use(router);
 app.mount('#app');

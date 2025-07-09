@@ -1,9 +1,9 @@
 
 :root {
-  --bg: #1e1e1e;
   --ring: #662222;
   --cross: #444;
   --trace-hold: #4aa3ff;
+  --trace-pull: #ffeb3b;
   --trace-trigger: #ff3366;
   --marker-pull: #ffeb3b;
   --marker-shot: #ffffff;
@@ -11,9 +11,6 @@
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--bg);
-  color: #ddd;
   min-height: 100vh;
 }
 
@@ -82,17 +79,15 @@ header {
 }
 
 .trace-visualizer {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
 }
 
 .trace-visualizer svg {
-  flex: 1;
+  flex: 1 1 auto;
   width: 100%;
-  height: 100%;
 }
 
 .trace-controls {
