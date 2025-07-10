@@ -30,4 +30,23 @@ describe("LandingPage", () => {
     expect(push).not.toHaveBeenCalled();
     store.folder = "";
   });
+
+  it("shows loading during fallback read", async () => {
+    const FileReaderMock = vi.fn(() => ({
+      onload: null,
+      readAsText() {
+        if (this.onload) {
+          setTimeout(() => this.onload({ target: { result: '{"pk":1,"shots":[]}' } }), 0);
+        }
+      }
+    }));
+    vi.stubGlobal('FileReader', FileReaderMock);
+    const wrapper = mount(LandingPage, { global: { provide: { store } } });
+    const file = new File(['{}'], 'a.json', { type: 'application/json' });
+    wrapper.vm.chooseFallback({ target: { files: [file] } });
+    expect(store.loading).toBe(true);
+    await new Promise(r => setTimeout(r));
+    expect(store.loading).toBe(false);
+    vi.unstubAllGlobals();
+  });
 });

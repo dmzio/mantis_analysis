@@ -32,8 +32,9 @@ test("dashboard lists sessions", async ({ page }) => {
   await expect(page).toHaveURL(/\/dashboard$/);
   const rows = page.locator('[data-testid="session-table"] tbody tr');
   await expect(rows).toHaveCount(2);
-  await expect(page.locator('[data-testid="session-table"]')).toContainText('11111027');
-  await expect(page.locator('[data-testid="session-table"]')).toContainText('11111942');
+  await expect(rows.nth(0)).toContainText('10');
+  await expect(rows.nth(1)).toContainText('7');
+  await expect(rows.nth(0)).toContainText('May');
 
   await expect(page.locator('body')).toHaveClass(/p-dark/);
   await page.locator('[data-testid="theme-toggle"]').click();

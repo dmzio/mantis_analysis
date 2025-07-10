@@ -114,7 +114,8 @@ body {
   color: var(--text-color);
 }
 .main-menubar #reset-menu .p-menuitem-link {
-  background: var(--surface-700);
+  background: var(--primary-color);
+  color: var(--text-color);
   border-radius: 3px;
 }
 
@@ -205,11 +206,18 @@ header {
   height: 100%;
 }
 .session-view .p-tabview-nav {
-  background: var(--surface-900);
-  border-color: var(--surface-700);
+  background: var(--surface-900) !important;
+  border-color: var(--surface-700) !important;
 }
 .session-view .p-tabview-nav-link {
-  color: var(--text-color);
+  color: var(--text-color) !important;
+  background: var(--surface-900) !important;
+}
+.session-view .p-tabview-nav-link:not(.p-disabled):hover {
+  background: var(--surface-800) !important;
+}
+.session-view .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: var(--surface-700) !important;
 }
 
 .session-view .p-tabview-panels,

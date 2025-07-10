@@ -1,4 +1,4 @@
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Button from 'primevue/button';
 import { RouterLink } from 'vue-router';
@@ -13,9 +13,11 @@ export default defineComponent({
   components: { Button, SessionShotList, BackIcon, RouterLink },
   setup() {
     const route = useRoute();
-    const pk = Number(route.params.pk);
-    const session = (store.sessions as Record<number, any>)[pk] || { shots: [] };
-    const shots: any[] = session.shots || [];
+    const shots = computed(() => {
+      const pk = Number(route.params.pk);
+      const session = (store.sessions as Record<number, any>)[pk] || { shots: [] };
+      return session.shots || [];
+    });
     return { shots };
   },
   template: `
