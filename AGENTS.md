@@ -29,6 +29,7 @@ It uses PrimeVue's **styled** mode with the `lara-dark-blue` theme and keeps
 dark mode enabled by applying the `.p-dark` class on the document body.
 The compiled layout CSS is loaded from the Sakai template site.
 All icons must come from the PrimeVue [Material Design icon set](https://primevue.org/customicons/#material) using the `useCustomIcon` helper. Other widgets (tables, buttons, etc.) should use the PrimeVue component equivalents whenever possible.
+For installation commands and Sakai usage tips see `docs/primevue_sakai.md`.
 Run the app through Vite's dev server or build it via `npm run build`.
 
 ```
