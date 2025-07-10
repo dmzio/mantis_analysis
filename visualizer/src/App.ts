@@ -30,8 +30,8 @@ export default defineComponent({
     }
   },
   methods: {
-    reset() {
-      resetStore();
+    async reset() {
+      await resetStore();
       router.push('/');
     },
     applyDark(val: boolean) {
