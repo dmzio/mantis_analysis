@@ -1,21 +1,22 @@
 import { defineComponent } from 'vue';
+import Button from 'primevue/button';
 import store from '../store';
 import router from '../router';
+import { getHandle, saveHandle } from '../fsHandles';
 
 export default defineComponent({
   name: 'LandingPage',
+  components: { Button },
   template: `
       <div class="landing-page">
         <header>pick folder with session dumps</header>
         <p v-if="store.folder">Selected: {{ store.folder }}</p>
-        <input type="file" webkitdirectory multiple @change="choose" />
-        <button v-if="store.folder && !hasSessions" @click="load">load</button>
+        <Button label="Select Folder" @click="pick" />
+        <input ref="fallback" type="file" webkitdirectory multiple style="display:none" @change="chooseFallback" />
       </div>
     `,
   mounted() {
-    if (store.folder && Object.keys(store.sessions).length) {
-      router.push('/dashboard');
-    }
+    this.autoLoad();
   },
   computed: {
     store() {
@@ -26,7 +27,34 @@ export default defineComponent({
     }
   },
   methods: {
-    choose(e: Event) {
+    async autoLoad() {
+      if (store.folder && Object.keys(store.sessions).length) {
+        router.push('/dashboard');
+        return;
+      }
+      const handle = await getHandle();
+      if (handle) {
+        const perm = await handle.queryPermission({ mode: 'read' });
+        if (perm === 'granted') {
+          await this.loadFromHandle(handle);
+        }
+      }
+    },
+    async pick() {
+      if ('showDirectoryPicker' in window) {
+        try {
+          const handle: FileSystemDirectoryHandle = await (window as any).showDirectoryPicker();
+          await saveHandle(handle);
+          await this.loadFromHandle(handle);
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        const input = this.$refs.fallback as HTMLInputElement;
+        input.click();
+      }
+    },
+    chooseFallback(e: Event) {
       const input = e.target as HTMLInputElement;
       const files = Array.from(input.files || []);
       if (!files.length) return;
@@ -54,30 +82,33 @@ export default defineComponent({
         reader.readAsText(f);
       });
     },
-    async load() {
-      try {
-        const listing = await fetch(store.folder + '/').then(r => r.text());
-        const files = Array.from(listing.matchAll(/href="(\d+\.json)"/g)).map(m => m[1]);
-        if (!files.length) return;
-        store.sessions = {};
-        let remain = files.length;
-        const done = () => { if (--remain === 0) router.push('/dashboard'); };
-        files.forEach(name => {
-          fetch(store.folder + '/' + name)
-            .then(r => r.json())
-            .then(obj => {
-              const id = obj.session?.pk ?? obj.pk;
-              if (id !== undefined) {
-                (store.sessions as Record<number, any>)[id] = obj.session || obj;
-              }
-            })
-            .catch(err => console.error(err))
-            .finally(done);
-        });
-      } catch (err) {
-        console.error(err);
+    async loadFromHandle(handle: FileSystemDirectoryHandle) {
+      store.handle = handle;
+      store.folder = handle.name;
+      localStorage.setItem('data_folder', handle.name);
+      store.sessions = {};
+      const names: FileSystemHandle[] = [];
+      for await (const entry of handle.values()) {
+        if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+          names.push(entry);
+        }
+      }
+      let processed = 0;
+      for await (const entry of names) {
+        try {
+          const file = await (entry as FileSystemFileHandle).getFile();
+          const text = await file.text();
+          const obj = JSON.parse(text);
+          const id = obj.session?.pk ?? obj.pk;
+          if (id !== undefined) {
+            (store.sessions as Record<number, any>)[id] = obj.session || obj;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        processed++;
+        if (processed === names.length) router.push('/dashboard');
       }
     }
   }
 });
-

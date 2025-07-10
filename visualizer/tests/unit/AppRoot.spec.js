@@ -5,7 +5,7 @@ import store from "../../src/store";
 import router from "../../src/router";
 
 describe("AppRoot", () => {
-  it("resets data and redirects", () => {
+  it("resets data and redirects", async () => {
     store.folder = "data";
     store.sessions = { 1: {}, 2: {} };
     localStorage.setItem("data_folder", "data");
@@ -17,7 +17,7 @@ describe("AppRoot", () => {
         mocks: { $route: { path: '/dashboard' } }
       }
     });
-    (wrapper.vm).reset();
+    await (wrapper.vm).reset();
     expect(store.folder).toBe("");
     expect(Object.keys(store.sessions).length).toBe(0);
     expect(localStorage.getItem("data_folder")).toBeNull();
