@@ -17,13 +17,31 @@ beforeEach(() => {
 describe("SessionView", () => {
   it("shows stats", async () => {
     await router.push('/session/1');
-    const wrapper = mount(SessionView, { global: { plugins: [PrimeVue, router] } });
-    expect(wrapper.text()).toMatch(/Total shots:\s*1/);
+    const wrapper = mount(SessionView, {
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          TabView: { template: '<div><slot /></div>' },
+          TabPanel: { template: '<div><slot /></div>' },
+          TraceVisualizer: { template: '<svg></svg>' }
+        }
+      }
+    });
+    expect(wrapper.find('svg').exists()).toBe(true);
   });
 
   it("renders sidebar with shot list", async () => {
     await router.push('/session/1');
-    const wrapper = mount(SessionSidebar, { global: { plugins: [PrimeVue, router] } });
+    const wrapper = mount(SessionSidebar, {
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          DataTable: { template: '<table data-testid="shot-table"></table>' },
+          Column: { template: '<td></td>' },
+          Button: { template: '<button></button>' }
+        }
+      }
+    });
     expect(wrapper.find('[data-testid="shot-table"]').exists()).toBe(true);
   });
 

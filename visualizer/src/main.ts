@@ -17,3 +17,4 @@ app.use(PrimeVue, {
 });
 app.use(router);
 app.mount('#app');
+document.body.setAttribute('data-theme', 'lara-dark-blue');

@@ -27,19 +27,21 @@ export default defineComponent({
     }
   },
   template: `
-    <DataTable :value="sessions" data-testid="session-table" scrollable scrollHeight="flex">
-      <Column field="date" header="Date" />
-      <Column header="Shots" :body="shotCount" />
-      <Column field="pk" header="PK" />
-      <Column header="">
-        <template #body="slotProps">
-          <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">
-            <template #icon>
-              <EyeIcon />
-            </template>
-          </Button>
-        </template>
-      </Column>
-    </DataTable>
+    <div class="card">
+      <DataTable :value="sessions" data-testid="session-table" scrollable scrollHeight="flex">
+        <Column field="date" header="Date" />
+        <Column header="Shots" :body="shotCount" />
+        <Column field="pk" header="PK" />
+        <Column header="">
+          <template #body="slotProps">
+            <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">
+              <template #icon>
+                <EyeIcon />
+              </template>
+            </Button>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
   `
 });

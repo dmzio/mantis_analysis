@@ -1,11 +1,11 @@
 
 :root {
-  --ring: #662222;
-  --cross: #444;
-  --trace-hold: #4aa3ff;
-  --trace-pull: #ffeb3b;
-  --trace-trigger: #ff3366;
-  --marker-pull: #ffeb3b;
+  --ring: #db061f;
+  --cross: #b2b2b2;
+  --trace-hold: #3185fc;
+  --trace-pull: #f9dc5c;
+  --trace-trigger: #ff334b;
+  --marker-pull: #f9dc5c;
   --marker-shot: #ffffff;
 }
 
@@ -122,6 +122,9 @@ header {
   gap: 0.5rem;
   margin-top: 0.5rem;
   width: 100%;
+}
+.trace-controls .timeline {
+  flex: 1 1 auto;
 }
 
 .stat-summary {

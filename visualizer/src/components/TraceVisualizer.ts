@@ -5,10 +5,11 @@ import { useCustomIcon } from '../icons';
 import { toRelativeCoords, makeScale, splitSegments, ShotData } from '../traceUtils';
 
 const PlayIcon = useCustomIcon('play_arrow');
+const PauseIcon = useCustomIcon('pause');
 
 export default defineComponent({
   name: 'TraceVisualizer',
-  components: { Button, PlayIcon },
+  components: { Button, PlayIcon, PauseIcon },
   props: {
     shots: { type: Array as () => ShotData[], required: true }
   },
@@ -161,7 +162,7 @@ export default defineComponent({
     function play() {
       if (playing.value || maxDuration === 0) return;
       playing.value = true;
-      const start = Date.now();
+      const start = Date.now() - progress.value * maxDuration;
       timer = d3.timer(() => {
         const p = Math.min((Date.now() - start) / maxDuration, 1);
         progress.value = p;
@@ -172,6 +173,16 @@ export default defineComponent({
       });
     }
 
+    function pause() {
+      if (!playing.value) return;
+      playing.value = false;
+      timer?.stop();
+    }
+
+    function toggle() {
+      if (playing.value) pause(); else play();
+    }
+
     onMounted(() => {
       draw();
       d3.select(svgRef.value).call(zoom as any);
@@ -180,15 +191,18 @@ export default defineComponent({
     watch(() => props.shots, draw);
     watch(progress, updatePaths);
 
-    return { svgRef, play, progress };
+    return { svgRef, toggle, play, pause, progress, playing };
   },
   template: `
     <div class="trace-visualizer">
       <svg ref="svgRef" class="trace-svg" data-testid="trace-svg"></svg>
       <div class="trace-controls">
         <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" class="timeline" />
-        <Button @click="play" class="p-button-sm" data-testid="play-btn">
-          <template #icon><PlayIcon /></template>
+        <Button @click="toggle" class="p-button-sm" data-testid="play-btn">
+          <template #icon>
+            <PlayIcon v-if="!playing" />
+            <PauseIcon v-else />
+          </template>
         </Button>
       </div>
     </div>
