@@ -1,9 +1,10 @@
-import { defineComponent } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import store from '../store';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import SessionStats from './SessionStats';
+import { ensureData } from '../dataLoader';
 
 export default defineComponent({
   name: 'SessionView',
@@ -11,16 +12,18 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const router = useRouter();
-    if (!Object.keys(store.sessions).length) {
-      router.push('/');
-      return { session: {}, shots: [] };
-    }
-    const pk = Number(route.params.pk);
-    const session =
-      (store.sessions as Record<number, any>)[pk] || {
-        shots: []
-      };
-    const shots: any[] = session.shots || [];
+    const session = reactive<any>({ shots: [] as any[] });
+    const shots = session.shots as any[];
+    ensureData().then(ok => {
+      if (!ok) {
+        router.push('/');
+        return;
+      }
+      const pk = Number(route.params.pk);
+      const data = (store.sessions as Record<number, any>)[pk] || { shots: [] };
+      Object.assign(session, data);
+      session.shots = data.shots || [];
+    });
     return { session, shots };
   },
   template: `

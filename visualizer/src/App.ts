@@ -1,13 +1,17 @@
 import { defineComponent } from 'vue';
 import Menubar from 'primevue/menubar';
 import InputSwitch from 'primevue/inputswitch';
+import ProgressSpinner from 'primevue/progressspinner';
 import router from './router';
 import store, { resetStore } from './store';
 
 export default defineComponent({
   name: 'AppRoot',
-  components: { Menubar, InputSwitch },
+  components: { Menubar, InputSwitch, ProgressSpinner },
   computed: {
+    store() {
+      return store;
+    },
     items() {
       return [ { label: 'Reset data', id: 'reset-menu', command: this.reset } ];
     }
@@ -43,6 +47,9 @@ export default defineComponent({
   },
   template: `
     <div class="app-wrapper">
+      <div v-if="store.loading" class="loading-overlay">
+        <ProgressSpinner style="width:150px;height:150px" />
+      </div>
       <div class="topbar" v-if="$route.path !== '/'">
         <Menubar :model="items" class="main-menubar">
           <template #end>

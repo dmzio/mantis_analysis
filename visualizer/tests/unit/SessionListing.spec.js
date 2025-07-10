@@ -4,6 +4,7 @@ import PrimeVue from "primevue/config";
 import SessionListing from "../../src/components/SessionListing";
 import router from "../../src/router";
 import { vi } from "vitest";
+import { formatDate } from "../../src/dateFmt";
 
 describe("SessionListing", () => {
   it("renders session data", () => {
@@ -20,6 +21,7 @@ describe("SessionListing", () => {
       }
     });
     expect(wrapper.vm.shotCount(sessions[0])).toBe(3);
+    expect(wrapper.vm.fmtDate({ date: '2024-01-01' })).toBe(formatDate('2024-01-01'));
     expect(wrapper.find('table').exists()).toBe(true);
   });
 

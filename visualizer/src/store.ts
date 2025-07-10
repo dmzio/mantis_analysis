@@ -5,6 +5,7 @@ interface StoreState {
   sessions: Record<number, any>;
   folder: string;
   handle: FileSystemDirectoryHandle | null;
+  loading: boolean;
 }
 
 const store = reactive<StoreState>({
@@ -13,13 +14,15 @@ const store = reactive<StoreState>({
     typeof localStorage === 'undefined'
       ? ''
       : localStorage.getItem('data_folder') || '',
-  handle: null
+  handle: null,
+  loading: false
 });
 
 export async function resetStore() {
   store.sessions = {};
   store.folder = '';
   store.handle = null;
+  store.loading = false;
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('data_folder');
   }
