@@ -48,3 +48,29 @@ test("dashboard lists sessions", async ({ page }) => {
   await expect(page).toHaveURL('http://localhost:8765/');
   await expect(page.evaluate(() => localStorage.getItem('data_folder'))).resolves.toBeNull();
 });
+
+test("visualizer theming and controls", async ({ page }) => {
+  await page.goto("http://localhost:8765/");
+  const sample = {
+    name: "data/11111027.json",
+    mimeType: "application/json",
+    buffer: fs.readFileSync(path.resolve(__dirname, "../../../samples/sessions/11111027.json"))
+  };
+  await page.locator('input[type="file"]').setInputFiles([sample]);
+  await page.locator('[data-testid="session-table"] tbody tr button').first().click();
+  await expect(page).toHaveURL(/\/session\//);
+
+  const playBtn = page.locator('[data-testid="play-btn"]');
+  await expect(playBtn).toBeVisible();
+  await expect(page.locator('.trace-controls')).toBeVisible();
+  await expect(playBtn.locator('.material-icons')).toHaveText('play_arrow');
+  await playBtn.click();
+
+  const svgBgDark = await page.evaluate(() => getComputedStyle(document.querySelector('.trace-visualizer svg')).backgroundColor);
+  const shotColorDark = await page.evaluate(() => getComputedStyle(document.querySelector('[data-marker="shot"]')).fill);
+  await page.locator('[data-testid="theme-toggle"]').click();
+  const svgBgLight = await page.evaluate(() => getComputedStyle(document.querySelector('.trace-visualizer svg')).backgroundColor);
+  const shotColorLight = await page.evaluate(() => getComputedStyle(document.querySelector('[data-marker="shot"]')).fill);
+  expect(svgBgDark).not.toBe(svgBgLight);
+  expect(shotColorDark).not.toBe(shotColorLight);
+});

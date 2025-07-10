@@ -37,6 +37,8 @@ export default defineComponent({
     applyDark(val: boolean) {
       document.body.classList.toggle('p-dark', val);
       document.body.setAttribute('data-theme', val ? 'lara-dark-blue' : 'lara-light-blue');
+      document.body.classList.toggle('p-theme-lara-dark-blue', val);
+      document.body.classList.toggle('p-theme-lara-light-blue', !val);
     }
   },
   template: `

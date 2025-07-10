@@ -22,7 +22,8 @@ export default defineComponent({
     let maxDuration = 0;
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([1, 10])
+      // allow zooming out far enough to fit complete traces
+      .scaleExtent([0.05, 10])
       .on('zoom', event => {
         d3.select(svgRef.value).select('g').attr('transform', event.transform.toString());
       });
@@ -125,9 +126,14 @@ export default defineComponent({
           .attr('r', 4).attr('fill', 'var(--marker-pull)').attr('opacity', 0).attr('data-marker', 'pull');
         const [sx, sy] = segs.recoil[0];
         const shotMark = root.append('text').attr('x', sx).attr('y', sy)
-          .attr('fill', 'var(--marker-shot)').attr('font-size', 14)
-          .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-          .attr('opacity', 0).attr('data-marker', 'shot').text('✕');
+          .attr('fill', 'var(--marker-shot)')
+          .attr('font-size', 20)
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('opacity', 0)
+          .attr('data-marker', 'shot')
+          .text('✕');
 
         const msPerSample = 1000 / (shot.sample_rate ?? 400);
         const holdMs = segs.hold.length * msPerSample;
@@ -191,7 +197,7 @@ export default defineComponent({
     watch(() => props.shots, draw);
     watch(progress, updatePaths);
 
-    return { svgRef, toggle, play, pause, progress, playing };
+    return { svgRef, toggle, play, pause, progress, playing, zoom };
   },
   template: `
     <div class="trace-visualizer">
