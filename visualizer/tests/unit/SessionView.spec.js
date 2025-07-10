@@ -38,7 +38,8 @@ describe("SessionView", () => {
         stubs: {
           DataTable: { template: '<table data-testid="shot-table"></table>' },
           Column: { template: '<td></td>' },
-          Button: { template: '<button></button>' }
+          Button: { template: '<button></button>' },
+          RouterLink: { template: '<a></a>' }
         }
       }
     });
@@ -51,6 +52,7 @@ describe("SessionView", () => {
     const push = vi.fn();
     router.push = push;
     mount(SessionView, { global: { plugins: [PrimeVue, router] } });
+    await Promise.resolve();
     expect(push).toHaveBeenCalledWith('/');
   });
 });

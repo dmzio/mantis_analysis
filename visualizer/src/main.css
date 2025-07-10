@@ -43,6 +43,19 @@ body {
   color: var(--text-color);
 }
 
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+}
+
 #app {
   height: 100vh;
   display: flex;
@@ -99,6 +112,10 @@ body {
 }
 .main-menubar .p-menuitem-link {
   color: var(--text-color);
+}
+.main-menubar #reset-menu .p-menuitem-link {
+  background: var(--surface-700);
+  border-radius: 3px;
 }
 
 .view-container {
@@ -186,6 +203,13 @@ header {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+.session-view .p-tabview-nav {
+  background: var(--surface-900);
+  border-color: var(--surface-700);
+}
+.session-view .p-tabview-nav-link {
+  color: var(--text-color);
 }
 
 .session-view .p-tabview-panels,

@@ -3,6 +3,7 @@ import Button from 'primevue/button';
 import store from '../store';
 import router from '../router';
 import { getHandle, saveHandle } from '../fsHandles';
+import { loadFromHandle } from '../dataLoader';
 
 export default defineComponent({
   name: 'LandingPage',
@@ -36,7 +37,8 @@ export default defineComponent({
       if (handle) {
         const perm = await handle.queryPermission({ mode: 'read' });
         if (perm === 'granted') {
-          await this.loadFromHandle(handle);
+          await loadFromHandle(handle);
+          router.push('/dashboard');
         }
       }
     },
@@ -45,7 +47,8 @@ export default defineComponent({
         try {
           const handle: FileSystemDirectoryHandle = await (window as any).showDirectoryPicker();
           await saveHandle(handle);
-          await this.loadFromHandle(handle);
+          await loadFromHandle(handle);
+          router.push('/dashboard');
         } catch (err) {
           console.error(err);
         }
@@ -81,34 +84,6 @@ export default defineComponent({
         };
         reader.readAsText(f);
       });
-    },
-    async loadFromHandle(handle: FileSystemDirectoryHandle) {
-      store.handle = handle;
-      store.folder = handle.name;
-      localStorage.setItem('data_folder', handle.name);
-      store.sessions = {};
-      const names: FileSystemHandle[] = [];
-      for await (const entry of handle.values()) {
-        if (entry.kind === 'file' && entry.name.endsWith('.json')) {
-          names.push(entry);
-        }
-      }
-      let processed = 0;
-      for await (const entry of names) {
-        try {
-          const file = await (entry as FileSystemFileHandle).getFile();
-          const text = await file.text();
-          const obj = JSON.parse(text);
-          const id = obj.session?.pk ?? obj.pk;
-          if (id !== undefined) {
-            (store.sessions as Record<number, any>)[id] = obj.session || obj;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-        processed++;
-        if (processed === names.length) router.push('/dashboard');
-      }
     }
   }
 });
