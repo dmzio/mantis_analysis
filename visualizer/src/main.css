@@ -12,6 +12,8 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--surface-ground);
+  color: var(--text-color);
 }
 
 #app {
@@ -33,6 +35,7 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
+  background: var(--surface-900);
 }
 
 .layout-sidebar {
@@ -43,6 +46,7 @@ body {
   width: 250px;
   overflow-y: auto;
   padding: 1rem;
+  background: var(--surface-800);
 }
 
 .layout-main-container {
@@ -52,6 +56,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  background: var(--surface-ground);
+  max-width: none;
 }
 
 .layout-main {
@@ -63,6 +69,11 @@ body {
 
 .p-menubar, .main-menubar {
   width: 100%;
+  background: var(--surface-900);
+  color: var(--text-color);
+}
+.main-menubar .p-menuitem-link {
+  color: var(--text-color);
 }
 
 .view-container {
@@ -82,6 +93,7 @@ body {
 .dashboard-page,
 .landing-page {
   padding: 1rem;
+  background: var(--surface-ground);
 }
 
 header {
@@ -102,6 +114,13 @@ header {
   font-size: 1.25rem;
 }
 
+.card {
+  background: var(--surface-800);
+  color: var(--text-color);
+  border: 1px solid var(--surface-700);
+  box-shadow: var(--card-shadow, none);
+}
+
 .trace-visualizer {
   flex: 1 1 auto;
   display: flex;
@@ -114,6 +133,7 @@ header {
   flex: 1 1 auto;
   width: 100%;
   height: 100%;
+  background: var(--surface-700);
 }
 
 .trace-controls {
@@ -142,6 +162,36 @@ header {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--surface-900);
+  color: var(--text-color);
+  border-color: var(--surface-700);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  background: var(--surface-800);
+  color: var(--text-color);
+  border-color: var(--surface-700);
+}
+
+.p-scrollpanel-bar {
+  background: var(--primary-color);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
 }
 
 
