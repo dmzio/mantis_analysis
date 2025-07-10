@@ -91,9 +91,10 @@ body {
   width: 400px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem;
+  padding: 0.5rem;
   flex-shrink: 0;
   background: var(--surface-800);
+  font-size: 0.75rem;
 }
 
 .main-content {

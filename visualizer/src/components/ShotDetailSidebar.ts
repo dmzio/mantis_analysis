@@ -18,14 +18,19 @@ export default defineComponent({
       return (session.shots || []).find((s: any) => s.pk === shotPk.value) || null;
     });
     const items = computed(() => [
-      { label: `Session ${sessionPk.value}`, to: `/session/${sessionPk.value}` },
-      { label: `Shot ${shotPk.value}` }
+      { label: `Session ${sessionPk.value}`, url: `/session/${sessionPk.value}` },
+      { label: `Shot ${shotPk.value}`, disabled: true }
     ]);
-    const home = { label: 'Dashboard', to: '/dashboard' };
+    const home = { label: 'Dashboard', url: '/dashboard' };
     const details = computed(() => {
       const s = shot.value as Record<string, any> | null;
       if (!s) return [] as any[];
-      return Object.keys(s).map(k => ({ key: k, value: Array.isArray(s[k]) ? s[k].join(', ') : s[k] }));
+      return Object.keys(s).map(k => {
+        if (Array.isArray(s[k]) && (k.includes('pitch') || k.includes('yaw'))) {
+          return { key: k, value: s[k].length };
+        }
+        return { key: k, value: Array.isArray(s[k]) ? s[k].join(', ') : s[k] };
+      });
     });
     return { items, home, details };
   },

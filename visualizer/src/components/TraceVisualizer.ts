@@ -88,7 +88,8 @@ export default defineComponent({
       segsInfo = [];
       maxDuration = 0;
       props.shots.forEach(shot => {
-        const coords = toRelativeCoords(shot);
+        if (!shot.pitch?.length || !shot.yaw?.length) return;
+        const coords = toRelativeCoords(shot as any);
         const pullIdx = shot.pull_index ?? 0;
         const shotIdx = shot.shot_index ?? coords.length - 1;
         const scale = makeScale(coords.slice(pullIdx, shotIdx + 1).flat(), size);
@@ -194,7 +195,7 @@ export default defineComponent({
       d3.select(svgRef.value).call(zoom as any);
     });
 
-    watch(() => props.shots, draw);
+    watch(() => props.shots, draw, { deep: true, immediate: true });
     watch(progress, updatePaths);
 
     return { svgRef, toggle, play, pause, progress, playing, zoom };
