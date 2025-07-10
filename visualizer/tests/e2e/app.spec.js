@@ -35,6 +35,11 @@ test("dashboard lists sessions", async ({ page }) => {
   await expect(page.locator('[data-testid="session-table"]')).toContainText('11111027');
   await expect(page.locator('[data-testid="session-table"]')).toContainText('11111942');
 
+  await expect(page.locator('body')).toHaveClass(/p-dark/);
+  await page.locator('[data-testid="theme-toggle"]').click();
+  await expect(page.locator('body')).not.toHaveClass(/p-dark/);
+  await expect(page.evaluate(() => localStorage.getItem('darkMode'))).resolves.toBe('false');
+
   const stored = await page.evaluate(() => localStorage.getItem('data_folder'));
   expect(stored).not.toBeNull();
 

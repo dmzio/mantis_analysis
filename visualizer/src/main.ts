@@ -6,6 +6,10 @@ import router from './router';
 import AppRoot from './App';
 import './main.css';
 
+const dark = (localStorage.getItem('darkMode') ?? 'true') === 'true';
+document.body.classList.toggle('p-dark', dark);
+document.body.setAttribute('data-theme', dark ? 'lara-dark-blue' : 'lara-light-blue');
+
 const app = createApp(AppRoot);
 app.use(PrimeVue, {
   theme: {
@@ -17,4 +21,3 @@ app.use(PrimeVue, {
 });
 app.use(router);
 app.mount('#app');
-document.body.setAttribute('data-theme', 'lara-dark-blue');
