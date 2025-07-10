@@ -74,4 +74,10 @@ test("visualizer theming and controls", async ({ page }) => {
   const shotColorLight = await page.evaluate(() => getComputedStyle(document.querySelector('[data-marker="shot"]')).fill);
   expect(svgBgDark).not.toBe(svgBgLight);
   expect(shotColorDark).not.toBe(shotColorLight);
+
+  // open shot details
+  await page.locator('[data-testid="shot-table"] tbody tr button').first().click();
+  await expect(page).toHaveURL(/\/session\/\d+\/shot\/\d+/);
+  await expect(page.locator('[data-testid="breadcrumb"]').first()).toBeVisible();
+  await expect(page.locator('[data-testid="shot-details"]').first()).toBeVisible();
 });

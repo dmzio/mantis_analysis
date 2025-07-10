@@ -13,12 +13,12 @@ export default defineComponent({
   components: { Button, SessionShotList, BackIcon, RouterLink },
   setup() {
     const route = useRoute();
+    const sessionPk = computed(() => Number(route.params.pk));
     const shots = computed(() => {
-      const pk = Number(route.params.pk);
-      const session = (store.sessions as Record<number, any>)[pk] || { shots: [] };
+      const session = (store.sessions as Record<number, any>)[sessionPk.value] || { shots: [] };
       return session.shots || [];
     });
-    return { shots };
+    return { shots, sessionPk };
   },
   template: `
     <div class="session-sidebar-content">
@@ -26,7 +26,7 @@ export default defineComponent({
         <span class="p-button-icon p-button-icon-left"><BackIcon /></span>
         <span class="p-button-label">Dashboard</span>
       </RouterLink>
-      <SessionShotList :shots="shots" />
+      <SessionShotList :shots="shots" :sessionPk="sessionPk" />
     </div>
   `
 });

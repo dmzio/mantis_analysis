@@ -39,7 +39,8 @@ describe("SessionView", () => {
           DataTable: { template: '<table data-testid="shot-table"></table>' },
           Column: { template: '<td></td>' },
           Button: { template: '<button></button>' },
-          RouterLink: { template: '<a></a>' }
+          RouterLink: { template: '<a></a>' },
+          EyeIcon: { template: '<span></span>' }
         }
       }
     });
