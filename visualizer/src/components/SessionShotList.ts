@@ -1,12 +1,27 @@
 import { defineComponent } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Button from 'primevue/button';
+import { useRouter } from 'vue-router';
+import { useCustomIcon } from '../icons';
+
+const EyeIcon = useCustomIcon('visibility');
 
 export default defineComponent({
   name: 'SessionShotList',
-  components: { DataTable, Column },
+  components: { DataTable, Column, Button, EyeIcon },
   props: {
-    shots: { type: Array, required: true }
+    shots: { type: Array, required: true },
+    sessionPk: { type: Number, required: true }
+  },
+  setup(props) {
+    const router = useRouter();
+    return { router, props };
+  },
+  methods: {
+    toDetails(row: any) {
+      this.router.push(`/session/${this.sessionPk}/shot/${row.pk}`);
+    }
   },
   template: `
     <div class="card">
@@ -14,6 +29,15 @@ export default defineComponent({
         <Column field="pk" header="PK" />
         <Column field="score" header="Score" />
         <Column field="problem" header="Problem" />
+        <Column header="">
+          <template #body="slotProps">
+            <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">
+              <template #icon>
+                <EyeIcon />
+              </template>
+            </Button>
+          </template>
+        </Column>
       </DataTable>
     </div>
   `
