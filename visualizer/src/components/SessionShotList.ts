@@ -9,10 +9,12 @@ export default defineComponent({
     shots: { type: Array, required: true }
   },
   template: `
-    <DataTable :value="shots" data-testid="shot-table">
-      <Column field="pk" header="PK" />
-      <Column field="score" header="Score" />
-      <Column field="problem" header="Problem" />
-    </DataTable>
+    <div class="card">
+      <DataTable :value="shots" data-testid="shot-table">
+        <Column field="pk" header="PK" />
+        <Column field="score" header="Score" />
+        <Column field="problem" header="Problem" />
+      </DataTable>
+    </div>
   `
 });
