@@ -39,7 +39,7 @@ export async function ensureData(): Promise<boolean> {
   if (!store.folder) return false;
   const handle = await getHandle();
   if (!handle) return false;
-  const perm = await handle.queryPermission({ mode: 'read' });
+  const perm = await (handle as any).queryPermission({ mode: 'read' });
   if (perm !== 'granted') return false;
   await loadFromHandle(handle);
   return Object.keys(store.sessions).length > 0;

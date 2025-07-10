@@ -36,7 +36,7 @@ export default defineComponent({
       }
       const handle = await getHandle();
       if (handle) {
-        const perm = await handle.queryPermission({ mode: 'read' });
+        const perm = await (handle as any).queryPermission({ mode: 'read' });
         if (perm === 'granted') {
           await loadFromHandle(handle);
           router.push('/dashboard');
