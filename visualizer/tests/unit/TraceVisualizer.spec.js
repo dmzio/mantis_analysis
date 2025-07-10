@@ -42,4 +42,10 @@ describe('TraceVisualizer', () => {
     const svg = wrapper.find('[data-testid="trace-svg"]');
     expect(svg.attributes('class')).toContain('trace-svg');
   });
+
+  it('allows zooming out', () => {
+    const shots = [{ pitch: [0,0], yaw: [0,0] }];
+    const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
+    expect(wrapper.vm.zoom.scaleExtent()[0]).toBeLessThanOrEqual(0.05);
+  });
 });

@@ -33,9 +33,11 @@ describe("AppRoot", () => {
       }
     });
     expect(document.body.classList.contains("p-dark")).toBe(true);
+    expect(document.body.classList.contains("p-theme-lara-dark-blue")).toBe(true);
     wrapper.vm.dark = false;
     return wrapper.vm.$nextTick().then(() => {
       expect(document.body.classList.contains("p-dark")).toBe(false);
+      expect(document.body.classList.contains("p-theme-lara-light-blue")).toBe(true);
       expect(localStorage.getItem("darkMode")).toBe("false");
     });
   });
