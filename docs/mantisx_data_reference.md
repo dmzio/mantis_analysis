@@ -23,12 +23,17 @@ Shot objects contain raw sensor arrays and timing markers. The core fields used 
 
 - `pk` – shot identifier used for element IDs.
 - `score` – numeric string parsed for averages and displayed with the trace【F:mantisweb_src/pistol.js†L672-L681】.
+- `angle` – final movement direction measured at `shot_index`. It is expressed in degrees clockwise from east and used to classify problems in the old UI.
 - `pitch` and `yaw` – arrays of orientation samples. Every point is mapped to screen coordinates via `mapPitchAndYawToPoint`,
   which uses `x = 330 + 100*scale*(yaw - center.x)` and a similar formula for `y`【F:mantisweb_src/pistol.js†L689-L699】.
+- These numbers are **degrees of rotation** reported by the sensor. 0 means the sensor is perfectly level and pointing straight.
+  Positive `pitch` raises the muzzle, while positive `yaw` rotates it to the right. Values typically stay within ±15° during normal firing
+  but the raw arrays can contain much larger angles when the gun is moved or holstered.
 - `sample_rate` – samples per second. Timing values such as `horizontal_to_shot_time` are converted into indices by multiplying with this rate【F:mantisweb_src/pistol.js†L736-L740】.
 - `pull_index` and `shot_index` – array indices marking the trigger pull and the shot moment. They segment the trace into hold, pull and recoil parts.
 - `hold_index` – beginning of the aiming hold (not referenced directly in the scripts).
 - `trigger_pull` and `trigger_hold` – numeric strings for trigger phases. The archived code does not reference them.
+- `split` – time between this shot and the previous one as a string in seconds.
 - `absolute_pitch`, `absolute_roll`, `bullseye` and `extras` – stored but unused by the legacy scripts.
 
 Additional timing fields such as `horizontal_to_shot_time`, `holster_target_time`, `horizontal_time`, `holster_pull_time`, `grip_time` and `holster_shot_time` are consulted when drawing holster‑draw charts. They are summed and averaged in `calculateAverage` and `generateShots`【F:mantisweb_src/pistol.js†L119-L170】.
