@@ -3,12 +3,13 @@ import { useRoute, useRouter } from 'vue-router';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import TraceVisualizer from './TraceVisualizer';
+import RawStabilityPlot from './RawStabilityPlot';
 import store from '../store';
 import { ensureData } from '../dataLoader';
 
 export default defineComponent({
   name: 'ShotDetailView',
-  components: { TabView, TabPanel, TraceVisualizer },
+  components: { TabView, TabPanel, TraceVisualizer, RawStabilityPlot },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -29,7 +30,10 @@ export default defineComponent({
     <div class="session-view">
       <TabView>
         <TabPanel header="Track">
-          <TraceVisualizer :shots="[shot]" />
+          <div class="shot-layout">
+            <RawStabilityPlot :shot="shot" />
+            <TraceVisualizer :shots="[shot]" />
+          </div>
         </TabPanel>
       </TabView>
     </div>

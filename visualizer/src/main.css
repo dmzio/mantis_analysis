@@ -244,6 +244,20 @@ header {
   background: var(--primary-color);
 }
 
+.shot-layout {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.shot-layout .raw-stability-plot,
+.shot-layout .trace-visualizer {
+  flex: 1 1 50%;
+  min-height: 0;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
