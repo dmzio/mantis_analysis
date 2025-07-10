@@ -252,9 +252,18 @@ header {
   min-height: 0;
 }
 
-.shot-layout .raw-stability-plot,
+.shot-layout .raw-stability-plot {
+  flex: 0 0 30vh;
+  height: 30vh;
+  min-height: 0;
+}
+
+.raw-stability-plot .p-chart {
+  height: 100%;
+}
+
 .shot-layout .trace-visualizer {
-  flex: 1 1 50%;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
