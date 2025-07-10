@@ -1,4 +1,4 @@
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, reactive, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import store from '../store';
 import TabView from 'primevue/tabview';
@@ -13,7 +13,7 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const session = reactive<any>({ shots: [] as any[] });
-    const shots = session.shots as any[];
+    const shots = computed(() => session.shots as any[]);
     ensureData().then(ok => {
       if (!ok) {
         router.push('/');

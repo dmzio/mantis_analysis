@@ -66,7 +66,13 @@ export default defineComponent({
       localStorage.setItem('data_folder', prefix);
       store.sessions = {};
       let remain = files.length;
-      const done = () => { if (--remain === 0) router.push('/dashboard'); };
+      store.loading = true;
+      const done = () => {
+        if (--remain === 0) {
+          store.loading = false;
+          router.push('/dashboard');
+        }
+      };
       files.forEach(f => {
         if (!f.name.endsWith('.json')) { done(); return; }
         const reader = new FileReader();
