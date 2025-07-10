@@ -23,11 +23,14 @@ describe('ShotDetailView', () => {
         stubs: {
           TabView: { template: '<div><slot /></div>' },
           TabPanel: { template: '<div><slot /></div>' },
-          TraceVisualizer: { template: '<svg></svg>' }
+          TraceVisualizer: { template: '<svg></svg>' },
+          RawStabilityPlot: { template: '<canvas></canvas>' },
+          Chart: { template: '<canvas></canvas>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
+    expect(wrapper.find('canvas').exists()).toBe(true);
   });
 
   it('renders sidebar with breadcrumb', async () => {
@@ -57,7 +60,9 @@ describe('ShotDetailView', () => {
         stubs: {
           TabView: { template: '<div><slot /></div>' },
           TabPanel: { template: '<div><slot /></div>' },
-          TraceVisualizer: { template: '<svg></svg>' }
+          TraceVisualizer: { template: '<svg></svg>' },
+          RawStabilityPlot: { template: '<canvas></canvas>' },
+          Chart: { template: '<canvas></canvas>' }
         }
       }
     });
