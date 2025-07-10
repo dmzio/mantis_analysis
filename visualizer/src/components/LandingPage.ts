@@ -7,12 +7,22 @@ export default defineComponent({
   template: `
       <div class="landing-page">
         <header>pick folder with session dumps</header>
+        <p v-if="store.folder">Selected: {{ store.folder }}</p>
         <input type="file" webkitdirectory multiple @change="choose" />
+        <button v-if="store.folder && !hasSessions" @click="load">load</button>
       </div>
     `,
   mounted() {
     if (store.folder && Object.keys(store.sessions).length) {
       router.push('/dashboard');
+    }
+  },
+  computed: {
+    store() {
+      return store;
+    },
+    hasSessions() {
+      return Object.keys(store.sessions).length > 0;
     }
   },
   methods: {
@@ -43,6 +53,31 @@ export default defineComponent({
         };
         reader.readAsText(f);
       });
+    },
+    async load() {
+      try {
+        const listing = await fetch(store.folder + '/').then(r => r.text());
+        const files = Array.from(listing.matchAll(/href="(\d+\.json)"/g)).map(m => m[1]);
+        if (!files.length) return;
+        store.sessions = {};
+        let remain = files.length;
+        const done = () => { if (--remain === 0) router.push('/dashboard'); };
+        files.forEach(name => {
+          fetch(store.folder + '/' + name)
+            .then(r => r.json())
+            .then(obj => {
+              const id = obj.session?.pk ?? obj.pk;
+              if (id !== undefined) {
+                (store.sessions as Record<number, any>)[id] = obj.session || obj;
+              }
+            })
+            .catch(err => console.error(err))
+            .finally(done);
+        });
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
 });
+
