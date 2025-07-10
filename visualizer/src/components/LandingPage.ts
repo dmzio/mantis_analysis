@@ -4,6 +4,7 @@ import store from '../store';
 import router from '../router';
 import { getHandle, saveHandle } from '../fsHandles';
 import { loadFromHandle } from '../dataLoader';
+import { parseSessionFile } from '../sessionParser';
 
 export default defineComponent({
   name: 'LandingPage',
@@ -75,20 +76,15 @@ export default defineComponent({
       };
       files.forEach(f => {
         if (!f.name.endsWith('.json')) { done(); return; }
-        const reader = new FileReader();
-        reader.onload = ev => {
-          try {
-            const obj = JSON.parse((ev.target as FileReader).result as string);
-            const id = obj.session?.pk ?? obj.pk;
-            if (id !== undefined) {
-              (store.sessions as Record<number, any>)[id] = obj.session || obj;
+        parseSessionFile(f)
+          .then(res => {
+            if (res) {
+              const [id, obj] = res;
+              (store.sessions as Record<number, any>)[id] = obj;
             }
-          } catch (err) {
-            console.error(err);
-          }
-          done();
-        };
-        reader.readAsText(f);
+          })
+          .catch(err => console.error(err))
+          .finally(done);
       });
     }
   }

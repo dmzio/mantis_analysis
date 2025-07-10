@@ -1,5 +1,6 @@
 import store from './store';
 import { getHandle } from './fsHandles';
+import { parseSessionFile } from './sessionParser';
 
 export async function loadFromHandle(handle: FileSystemDirectoryHandle): Promise<void> {
   store.loading = true;
@@ -19,11 +20,10 @@ export async function loadFromHandle(handle: FileSystemDirectoryHandle): Promise
     for await (const entry of entries) {
       try {
         const file = await (entry as FileSystemFileHandle).getFile();
-        const text = await file.text();
-        const obj = JSON.parse(text);
-        const id = obj.session?.pk ?? obj.pk;
-        if (id !== undefined) {
-          (store.sessions as Record<number, any>)[id] = obj.session || obj;
+        const result = await parseSessionFile(file);
+        if (result) {
+          const [id, obj] = result;
+          (store.sessions as Record<number, any>)[id] = obj;
         }
       } catch (err) {
         console.error(err);
