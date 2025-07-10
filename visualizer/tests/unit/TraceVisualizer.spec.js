@@ -48,4 +48,12 @@ describe('TraceVisualizer', () => {
     const wrapper = mount(TraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
     expect(wrapper.vm.zoom.scaleExtent()[0]).toBeLessThanOrEqual(0.05);
   });
+
+  it('draws track when shot data arrives later', async () => {
+    const wrapper = mount(TraceVisualizer, { props: { shots: [{}] }, global: { plugins: [PrimeVue] } });
+    const updated = { pitch: [0, 0, 0], yaw: [0, 0, 0], pull_index: 1, shot_index: 2 };
+    await wrapper.setProps({ shots: [updated] });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-seg="pull"]').exists()).toBe(true);
+  });
 });
