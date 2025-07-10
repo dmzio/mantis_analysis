@@ -63,54 +63,5 @@ The main menu is defined in `src/layout/AppMenu.vue`. Update its `model` to cust
 
 Template CSS variables live under `assets/layout/_variables.scss` and can be customized. Demo pages rely on Tailwind CSS while the core layout uses custom CSS.
 
-### Using Sakai with Nuxt
 
-Create a new Nuxt project and add PrimeVue dependencies:
-
-```bash
-npx nuxi@latest init sakai-nuxt
-cd sakai-nuxt
-npm install primevue @primevue/themes tailwindcss-primeui primeicons
-npm install --save-dev @primevue/nuxt-module
-```
-
-Enable the module and Tailwind plugin in `nuxt.config.js`:
-
-```js
-modules: ['@primevue/nuxt-module']
-plugins: [require('tailwindcss-primeui')]
-```
-
-Configure PrimeVue with your preferred preset and dark mode selector:
-
-```ts
-import Aura from '@primevue/themes/aura'
-
-primevue: {
-    options: {
-        theme: {
-            preset: Aura,
-            options: {
-                darkModeSelector: '.app-dark'
-            }
-        }
-    }
-}
-```
-
-Copy the `assets` folder from the template and reference the styles:
-
-```js
-css: ['~/assets/tailwind.css', '~/assets/styles.scss']
-```
-
-Set up the layout in `app.vue` and `layouts/default.vue` to render `AppLayout`.
-
-As a final step, copy over template folders to your Nuxt project:
-
-- `public/demo` → `public`
-- `src/components` → `components`
-- `src/service` → `service`
-- `src/views/uikit` → `pages/uikit`
-- `src/views/pages` → `pages`
 
