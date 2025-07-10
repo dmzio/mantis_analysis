@@ -58,7 +58,7 @@ export default defineComponent({
         input.click();
       }
     },
-    chooseFallback(e: Event) {
+    async chooseFallback(e: Event) {
       const input = e.target as HTMLInputElement;
       const files = Array.from(input.files || []);
       if (!files.length) return;
@@ -66,26 +66,21 @@ export default defineComponent({
       store.folder = prefix;
       localStorage.setItem('data_folder', prefix);
       store.sessions = {};
-      let remain = files.length;
       store.loading = true;
-      const done = () => {
-        if (--remain === 0) {
-          store.loading = false;
-          router.push('/dashboard');
+      for (const f of files) {
+        if (!f.name.endsWith('.json')) continue;
+        try {
+          const res = await parseSessionFile(f);
+          if (res) {
+            const [id, obj] = res;
+            (store.sessions as Record<number, any>)[id] = obj;
+          }
+        } catch (err) {
+          console.error(err);
         }
-      };
-      files.forEach(f => {
-        if (!f.name.endsWith('.json')) { done(); return; }
-        parseSessionFile(f)
-          .then(res => {
-            if (res) {
-              const [id, obj] = res;
-              (store.sessions as Record<number, any>)[id] = obj;
-            }
-          })
-          .catch(err => console.error(err))
-          .finally(done);
-      });
+      }
+      store.loading = false;
+      router.push('/dashboard');
     }
   }
 });
