@@ -13,7 +13,7 @@ describe("AppRoot", () => {
     router.push = push;
     const wrapper = mount(AppRoot, {
       global: {
-        stubs: ["router-view", "Menubar"],
+        stubs: ["router-view", "Menubar", "InputSwitch"],
         mocks: { $route: { path: '/dashboard' } }
       }
     });
@@ -22,5 +22,21 @@ describe("AppRoot", () => {
     expect(Object.keys(store.sessions).length).toBe(0);
     expect(localStorage.getItem("data_folder")).toBeNull();
     expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("toggles dark mode", () => {
+    localStorage.setItem("darkMode", "true");
+    const wrapper = mount(AppRoot, {
+      global: {
+        stubs: ["router-view", "Menubar", "InputSwitch"],
+        mocks: { $route: { path: '/dashboard' } }
+      }
+    });
+    expect(document.body.classList.contains("p-dark")).toBe(true);
+    wrapper.vm.dark = false;
+    return wrapper.vm.$nextTick().then(() => {
+      expect(document.body.classList.contains("p-dark")).toBe(false);
+      expect(localStorage.getItem("darkMode")).toBe("false");
+    });
   });
 });

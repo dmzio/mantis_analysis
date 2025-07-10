@@ -23,48 +23,46 @@ body {
   overflow: hidden;
 }
 
-.layout-wrapper {
+.app-wrapper {
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.layout-topbar {
+.topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  height: 50px;
   z-index: 1000;
   background: var(--surface-900);
+  display: flex;
+  align-items: center;
 }
 
-.layout-sidebar {
-  position: fixed;
-  top: 3.5rem;
-  left: 0;
-  bottom: 0;
-  width: 250px;
+.app-body {
+  margin-top: 50px;
+  height: calc(100vh - 50px);
+  display: flex;
+}
+
+.sidebar {
+  width: 400px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1rem;
+  flex-shrink: 0;
   background: var(--surface-800);
 }
 
-.layout-main-container {
-  margin-left: 250px;
-  padding-top: 3.5rem;
-  height: calc(100vh - 3.5rem);
+.main-content {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  overflow: hidden;
   background: var(--surface-ground);
-  max-width: none;
-}
-
-.layout-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+  min-width: 0;
 }
 
 .p-menubar, .main-menubar {

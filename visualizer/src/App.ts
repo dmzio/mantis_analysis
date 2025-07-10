@@ -1,33 +1,62 @@
 import { defineComponent } from 'vue';
 import Menubar from 'primevue/menubar';
+import InputSwitch from 'primevue/inputswitch';
 import router from './router';
 import store, { resetStore } from './store';
 
 export default defineComponent({
   name: 'AppRoot',
-  components: { Menubar },
-  methods: {
-    reset() {
-      resetStore();
-      router.push('/');
-    }
-  },
+  components: { Menubar, InputSwitch },
   computed: {
     items() {
       return [ { label: 'Reset data', id: 'reset-menu', command: this.reset } ];
     }
   },
+  data() {
+    const dark = typeof localStorage === 'undefined'
+      ? true
+      : (localStorage.getItem('darkMode') ?? 'true') === 'true';
+    return { dark };
+  },
+  mounted() {
+    this.applyDark(this.dark);
+  },
+  watch: {
+    dark(val: boolean) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('darkMode', String(val));
+      }
+      this.applyDark(val);
+    }
+  },
+  methods: {
+    reset() {
+      resetStore();
+      router.push('/');
+    },
+    applyDark(val: boolean) {
+      document.body.classList.toggle('p-dark', val);
+      document.body.setAttribute('data-theme', val ? 'lara-dark-blue' : 'lara-light-blue');
+    }
+  },
   template: `
-    <div class="layout-wrapper">
-      <div class="layout-topbar" v-if="$route.path !== '/'">
-        <Menubar :model="items" class="main-menubar" />
+    <div class="app-wrapper">
+      <div class="topbar" v-if="$route.path !== '/'">
+        <Menubar :model="items" class="main-menubar">
+          <template #end>
+            <InputSwitch v-model="dark" data-testid="theme-toggle" />
+          </template>
+        </Menubar>
       </div>
-      <router-view name="sidebar" class="layout-sidebar" />
-      <div class="layout-main-container">
-        <div class="layout-main">
-          <router-view class="view-container" />
+      <template v-if="$route.path !== '/'">
+        <div class="app-body">
+          <router-view name="sidebar" class="sidebar" />
+          <div class="main-content">
+            <router-view class="view-container" />
+          </div>
         </div>
-      </div>
+      </template>
+      <router-view v-else class="view-container" />
     </div>
   `
 });

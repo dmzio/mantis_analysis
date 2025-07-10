@@ -33,8 +33,9 @@ Run `npm run dev` inside that directory to start the dev server or `npm run buil
 You can also execute `make vis-run` from the project root which installs missing dependencies and launches the dev server in one step.
 
 The Visualizer uses PrimeVue's **styled** theming and the `lara-dark-blue`
-preset for a dark appearance. Layout structure follows PrimeVue's free **Sakai**
-template with a topbar, sidebar and main container. PrimeVue allows customizing
+preset for a dark appearance. It ships with a custom layout that features a
+50&nbsp;px top bar, a 400&nbsp;px sidebar and a main content area that fills the
+remaining viewport. PrimeVue allows customizing
 the dark mode selector; see their
 [Dark Mode guide](https://primevue.org/theming/styled/#darkmode) for details.
 
