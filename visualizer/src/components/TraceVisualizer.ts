@@ -63,9 +63,11 @@ export default defineComponent({
 
     function draw() {
       if (!svgRef.value) return;
-      const size = svgRef.value.clientWidth || 400;
+      const rect = svgRef.value.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height) || 400;
       const svg = d3.select(svgRef.value);
-      svg.attr('viewBox', `0 0 ${size} ${size}`);
+      svg.attr('viewBox', `0 0 ${size} ${size}`)
+        .attr('preserveAspectRatio', 'xMidYMid meet');
       svg.selectAll('*').remove();
       const root = svg.append('g');
       
