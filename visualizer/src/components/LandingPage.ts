@@ -4,6 +4,7 @@ import store from '../store';
 import router from '../router';
 import { getHandle, saveHandle } from '../fsHandles';
 import { loadFromHandle } from '../dataLoader';
+import { processShot } from '../shotProcessor';
 
 export default defineComponent({
   name: 'LandingPage',
@@ -64,11 +65,14 @@ export default defineComponent({
       const prefix = (files[0].webkitRelativePath || '').split('/')[0];
       store.folder = prefix;
       localStorage.setItem('data_folder', prefix);
-      store.sessions = {};
-      let remain = files.length;
       store.loading = true;
+      const sessions: Record<number, any> = {};
+      const processed: Record<number, any> = {};
+      let remain = files.length;
       const done = () => {
         if (--remain === 0) {
+          store.sessions = sessions;
+          store.processed = processed;
           store.loading = false;
           router.push('/dashboard');
         }
@@ -81,7 +85,13 @@ export default defineComponent({
             const obj = JSON.parse((ev.target as FileReader).result as string);
             const id = obj.session?.pk ?? obj.pk;
             if (id !== undefined) {
-              (store.sessions as Record<number, any>)[id] = obj.session || obj;
+              const session = obj.session || obj;
+              sessions[id] = session;
+              if (Array.isArray(session.shots)) {
+                processed[id] = {
+                  shots: session.shots.map((s: any) => processShot(s))
+                };
+              }
             }
           } catch (err) {
             console.error(err);
