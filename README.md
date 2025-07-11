@@ -25,6 +25,9 @@ Python script, which connects to MantisX platform and downloads all available da
 to run - fill config.json with your data,
 activate environment and run `python data_download.py`
 
+If a session includes an attached image it will be downloaded into
+`data/sessions/session_photo` alongside the JSON files.
+
 
 ### Visualizer
 
