@@ -209,6 +209,26 @@ def _post(sess: requests.Session, url: str, body: dict):
     return r.json()
 
 
+def _maybe_save_image(sess: requests.Session, extras: Optional[dict], sid: str) -> None:
+    """Download a session image if `server_image_uri` is present."""
+    if not extras:
+        return
+    url = extras.get("server_image_uri")
+    if not url:
+        return
+    ext = Path(url).suffix or ".png"
+    out = PHOTO_DIR / f"{sid}{ext}"
+    if out.exists():
+        return
+    try:
+        resp = sess.get(url, timeout=60)
+        resp.raise_for_status()
+        out.write_bytes(resp.content)
+        logger.info("saved photo %s", out.name)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("photo for %s failed: %s", sid, exc)
+
+
 def get_session_list(sess: requests.Session, cfg: Config) -> List[str]:
     body = {
         "user_pk": cfg.user_pk,
@@ -233,6 +253,7 @@ def download_session(sess: requests.Session, sid: str, cfg: Config):
     sess_resp = SessionResponse(**data)  # full validation 🎉
     out = SESSION_DIR / f"{sid}.json"
     out.write_text(sess_resp.model_dump_json(indent=2, exclude_none=True))
+    _maybe_save_image(sess, sess_resp.session.extras, sid)
     logger.info("saved %s (%s shots)", sid, len(sess_resp.session.shots))
 
 
@@ -244,6 +265,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 CONFIG_PATH = ROOT_DIR / "config.json"
 SESSION_DIR = ROOT_DIR / "data" / "sessions"
 SESSION_DIR.mkdir(parents=True, exist_ok=True)
+PHOTO_DIR = SESSION_DIR / "session_photo"
+PHOTO_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Utilities
