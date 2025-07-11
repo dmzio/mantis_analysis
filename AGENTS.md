@@ -13,7 +13,7 @@ sample data file exist at `samples/sessions` - use during visualisation and anal
 
 ### Data downloader
 
-Python scripts.
+Python scripts live in `./python`.
 
 ### Visualizer
 
