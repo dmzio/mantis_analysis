@@ -21,7 +21,7 @@ describe('SessionStats', () => {
       global: {
         plugins: [PrimeVue],
         stubs: {
-          TraceVisualizer: { template: '<svg></svg>' }
+          RawTraceVisualizer: { template: '<svg></svg>' }
         }
       }
     });

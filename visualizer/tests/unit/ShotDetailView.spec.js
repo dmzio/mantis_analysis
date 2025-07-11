@@ -23,8 +23,10 @@ describe('ShotDetailView', () => {
         stubs: {
           TabView: { template: '<div><slot /></div>' },
           TabPanel: { template: '<div><slot /></div>' },
-          TraceVisualizer: { template: '<svg></svg>' },
+          RawTraceVisualizer: { template: '<svg></svg>' },
+          ProcessedTraceVisualizer: { template: '<svg></svg>' },
           RawStabilityPlot: { template: '<canvas></canvas>' },
+          ProcessedStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }
@@ -60,8 +62,10 @@ describe('ShotDetailView', () => {
         stubs: {
           TabView: { template: '<div><slot /></div>' },
           TabPanel: { template: '<div><slot /></div>' },
-          TraceVisualizer: { template: '<svg></svg>' },
+          RawTraceVisualizer: { template: '<svg></svg>' },
+          ProcessedTraceVisualizer: { template: '<svg></svg>' },
           RawStabilityPlot: { template: '<canvas></canvas>' },
+          ProcessedStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }

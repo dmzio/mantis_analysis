@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue';
-import TraceVisualizer from './TraceVisualizer';
+import TraceVisualizer from './RawTraceVisualizer';
 
 export default defineComponent({
   name: 'SessionStats',
