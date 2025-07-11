@@ -23,7 +23,7 @@ describe("SessionView", () => {
         stubs: {
           TabView: { template: '<div><slot /></div>' },
           TabPanel: { template: '<div><slot /></div>' },
-          TraceVisualizer: { template: '<svg></svg>' }
+          RawTraceVisualizer: { template: '<svg></svg>' }
         }
       }
     });
