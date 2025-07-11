@@ -26,7 +26,7 @@ To run - fill `python/config.json` with your data,
 activate environment and from the `python` directory run `python scripts/data_download.py`
 
 If a session includes an attached image it will be downloaded into
-`data/sessions/session_photo` alongside the JSON files.
+`python/data/sessions/session_photo` alongside the JSON files.
 
 
 ### Visualizer
