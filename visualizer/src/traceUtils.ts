@@ -18,13 +18,9 @@ export function toRelativeCoords(shot: ShotData): [number, number][] {
   return relPitch.map((p, i) => [relYaw[i], -p]);
 }
 
-export function makeScale(values: number[], size: number, fixed = false) {
-  if (fixed) {
-    const maxDeg = 10;
-    return (v: number) => (v / maxDeg) * (size / 2);
-  }
-  const extent = d3.extent(values.map(Math.abs)) as [number, number];
-  const k = (size / 2) / ((extent[1] ?? 0) + 0.1);
+export function makeScale(values: number[], size: number, fixedMax?: number) {
+  const max = fixedMax ?? (d3.extent(values.map(Math.abs)) as [number, number])[1] ?? 0;
+  const k = (size / 2) / (max + 0.1);
   return (v: number) => v * k;
 }
 

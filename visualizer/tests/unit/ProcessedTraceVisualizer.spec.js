@@ -15,4 +15,10 @@ describe('ProcessedTraceVisualizer', () => {
     const wrapper = mount(ProcessedTraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
     expect(wrapper.find('[data-testid="play-btn"]').exists()).toBe(true);
   });
+
+  it('renders ring labels', () => {
+    const shots = [{ rel_pitch_moa: [0], rel_yaw_moa: [0], start_index: 0 }];
+    const wrapper = mount(ProcessedTraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
+    expect(wrapper.findAll('.ring-label').length).toBeGreaterThan(0);
+  });
 });

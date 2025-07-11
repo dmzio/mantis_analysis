@@ -17,4 +17,4 @@ function prepare(shots: ProcessedShot[]): ShotData[] {
   });
 }
 
-export default createTraceVisualizer<ProcessedShot>('ProcessedTraceVisualizer', prepare);
+export default createTraceVisualizer<ProcessedShot>('ProcessedTraceVisualizer', prepare, true);

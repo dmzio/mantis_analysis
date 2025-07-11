@@ -49,6 +49,12 @@ describe('RawTraceVisualizer', () => {
     expect(wrapper.vm.zoom.scaleExtent()[0]).toBeLessThanOrEqual(0.05);
   });
 
+  it('renders ring labels', () => {
+    const shots = [{ pitch: [0,0], yaw: [0,0] }];
+    const wrapper = mount(RawTraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });
+    expect(wrapper.findAll('.ring-label').length).toBeGreaterThan(0);
+  });
+
   it('draws track when shot data arrives later', async () => {
     const wrapper = mount(RawTraceVisualizer, { props: { shots: [{}] }, global: { plugins: [PrimeVue] } });
     const updated = { pitch: [0, 0, 0], yaw: [0, 0, 0], pull_index: 1, shot_index: 2 };
