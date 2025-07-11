@@ -22,8 +22,8 @@ before committing them.
 
 Python script, which connects to MantisX platform and downloads all available data.
 
-to run - fill config.json with your data,
-activate environment and run `python data_download.py`
+To run - fill `python/config.json` with your data,
+activate environment and from the `python` directory run `python scripts/data_download.py`
 
 If a session includes an attached image it will be downloaded into
 `data/sessions/session_photo` alongside the JSON files.

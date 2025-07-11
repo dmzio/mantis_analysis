@@ -3,7 +3,7 @@
 setup: setup-python setup-vis
 
 setup-python:
-	uv sync
+        cd python && uv sync
 
 setup-vis:
 	cd visualizer \

@@ -262,7 +262,8 @@ def download_session(sess: requests.Session, sid: str, cfg: Config):
 # ---------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
-CONFIG_PATH = ROOT_DIR / "config.json"
+CONFIG_PATH = ROOT_DIR / "python" / "config.json"
+# store downloaded data in the project root, separate from source code
 SESSION_DIR = ROOT_DIR / "data" / "sessions"
 SESSION_DIR.mkdir(parents=True, exist_ok=True)
 PHOTO_DIR = SESSION_DIR / "session_photo"
