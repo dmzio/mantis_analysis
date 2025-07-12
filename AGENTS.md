@@ -29,6 +29,7 @@ inside the main container. It uses PrimeVue's **styled** mode with the
 All icons must come from the PrimeVue [Material Design icon set](https://primevue.org/customicons/#material) using the `useCustomIcon` helper. Other widgets (tables, buttons, etc.) should use the PrimeVue component equivalents whenever possible.
 For installation commands and layout tips see `docs/primevue_sakai.md`.
 Run the app through Vite's dev server or build it via `npm run build`.
+All components and functions should have clear docstring and be covered by unit and/or e2e tests.
 
 ```
 visualizer/
