@@ -26,9 +26,10 @@ export default defineComponent({
   template: `
     <div class="card">
       <DataTable :value="shots" data-testid="shot-table">
-        <Column field="pk" header="PK" />
         <Column field="score" header="Score" />
-        <Column field="problem" header="Problem" />
+        <Column field="percent_10" header="%∈10" />
+        <Column field="length_1s" header="L₁s" />
+        <Column field="delta_pull" header="Δpull" />
         <Column header="">
           <template #body="slotProps">
             <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">

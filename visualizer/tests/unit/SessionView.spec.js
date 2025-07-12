@@ -6,7 +6,8 @@ import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
 import SessionSidebar from "../../src/components/SessionSidebar";
 
-store.sessions = { 1: { pk: 1, shots: [{pk:11, score:"95", problem:"OK", pitch:[0,0], yaw:[0,0]}] } };
+store.sessions = { 1: { pk: 1, shots: [{pk:11, score:"95", pitch:[0,0], yaw:[0,0]}] } };
+store.processed = { 1: { shots: [{ pk:11, score:"95", percent_10:0.5, length_1s:1, delta_pull:0.2 }] } };
 
 beforeEach(() => {
   if (typeof window !== 'undefined') {
@@ -39,12 +40,13 @@ describe("SessionView", () => {
           DataTable: { template: '<table data-testid="shot-table"></table>' },
           Column: { template: '<td></td>' },
           Button: { template: '<button></button>' },
-          RouterLink: { template: '<a></a>' },
+          BreadCrumb: { template: '<nav data-testid="breadcrumb"></nav>' },
           EyeIcon: { template: '<span></span>' }
         }
       }
     });
     expect(wrapper.find('[data-testid="shot-table"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="breadcrumb"]').exists()).toBe(true);
   });
 
   it("redirects to landing when empty", async () => {

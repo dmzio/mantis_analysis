@@ -1,31 +1,28 @@
 import { defineComponent, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import Button from 'primevue/button';
-import { RouterLink } from 'vue-router';
+import BreadCrumb from 'primevue/breadcrumb';
 import SessionShotList from './SessionShotList';
-import { useCustomIcon } from '../icons';
 import store from '../store';
-
-const BackIcon = useCustomIcon('arrow_back');
 
 export default defineComponent({
   name: 'SessionSidebar',
-  components: { Button, SessionShotList, BackIcon, RouterLink },
+  components: { BreadCrumb, SessionShotList },
   setup() {
     const route = useRoute();
     const sessionPk = computed(() => Number(route.params.pk));
     const shots = computed(() => {
-      const session = (store.sessions as Record<number, any>)[sessionPk.value] || { shots: [] };
-      return session.shots || [];
+      const psession = (store.processed as Record<number, any>)[sessionPk.value] || { shots: [] };
+      return psession.shots || [];
     });
-    return { shots, sessionPk };
+    const items = computed(() => [
+      { label: `Session ${sessionPk.value}`, disabled: true }
+    ]);
+    const home = { label: 'Dashboard', url: '/dashboard' };
+    return { shots, sessionPk, items, home };
   },
   template: `
     <div class="session-sidebar-content">
-      <RouterLink to="/dashboard" class="p-button p-button-sm">
-        <span class="p-button-icon p-button-icon-left"><BackIcon /></span>
-        <span class="p-button-label">Dashboard</span>
-      </RouterLink>
+      <BreadCrumb :home="home" :model="items" data-testid="breadcrumb" class="p-mb-2" />
       <SessionShotList :shots="shots" :sessionPk="sessionPk" />
     </div>
   `
