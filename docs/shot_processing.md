@@ -33,3 +33,15 @@ The following table lists the current ISSF 10 m pistol target dimensions.  The
 | Black field | 59.50 | 29.75 | 0.17045 | 10.23 |
 | 20 cm radius (offset of aiming start) | 400.00 | 200.00 | 1.14576 | 68.75 |
 
+
+## Additional metrics
+
+The processor derives further data used throughout the visualizer:
+
+- **pull_index_calc** – index located 0.25&nbsp;s before the shot.
+- **length_1s** – path length covered during the last second before the shot in millimetres.
+- **delta_pull** – distance between the pull index and the shot point in millimetres.
+- **percent_10** – fraction of the trimmed trace that stays within the 10&nbsp;ring (1.98&nbsp;MOA).
+- **speed_pitch_mm_s / speed_yaw_mm_s** – vertical and horizontal speeds on the target in mm/s.
+
+The default conversion of MOA to millimetres assumes the ISSF 10&nbsp;m pistol target where one MOA equals approximately 2.9&nbsp;mm.

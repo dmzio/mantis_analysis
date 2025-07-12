@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { degToMoa, moaToDeg, getHoldCenter, relativeMoaArrays, findStartIndex, processShot } from '../../src/shotProcessor';
+import {
+  degToMoa,
+  moaToDeg,
+  getHoldCenter,
+  relativeMoaArrays,
+  findStartIndex,
+  processShot,
+  calcPullIndex,
+  segmentLengthMm,
+  distanceBetweenMm,
+  percentWithinMoa,
+  speedArraysMm,
+  MM_PER_MOA_10M
+} from '../../src/shotProcessor';
 
 const sampleShot = {
   pitch: [1, 1.1, 1.2, 1.3, 1.4],
@@ -46,5 +59,24 @@ describe('shotProcessor', () => {
     };
     const proc = processShot(shot as any);
     expect(proc.pre_shot_1s_index).toBe(1);
+  });
+
+  it('derives extra metrics', () => {
+    const shot = {
+      pitch: [0,0,0,0],
+      yaw: [0,0.5,1,1.5],
+      shot_index: 3,
+      sample_rate: 4
+    };
+    const pull = calcPullIndex(shot as any);
+    expect(pull).toBe(2);
+    const len = segmentLengthMm([0,0.5,1,1.5], [0,0,0,0], 0, 3, MM_PER_MOA_10M);
+    expect(len).toBeCloseTo(1.5 * MM_PER_MOA_10M, 5);
+    const dist = distanceBetweenMm([0,0,0,0], [0,0.5,1,1.5], 2, 3, MM_PER_MOA_10M);
+    expect(dist).toBeCloseTo(0.5 * MM_PER_MOA_10M, 5);
+    const pct = percentWithinMoa([0,0,0,0], [0,0.5,1,1.5], 0, 3, 1.98);
+    expect(pct).toBeCloseTo(1);
+    const speeds = speedArraysMm([0,0,0,0], [0,0.5,1,1.5], 4, MM_PER_MOA_10M);
+    expect(speeds.yaw[1]).toBeCloseTo(0.5 * MM_PER_MOA_10M * 4);
   });
 });

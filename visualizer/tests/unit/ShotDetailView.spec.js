@@ -26,12 +26,13 @@ describe('ShotDetailView', () => {
           RawTraceVisualizer: { template: '<svg></svg>' },
           ProcessedTraceVisualizer: { template: '<svg></svg>' },
           ProcessedStabilityPlot: { template: '<canvas></canvas>' },
+          ProcessedSpeedPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
-    expect(wrapper.findAll('canvas').length).toBe(2);
+    expect(wrapper.findAll('canvas').length).toBe(3);
   });
 
   it('renders sidebar with breadcrumb', async () => {

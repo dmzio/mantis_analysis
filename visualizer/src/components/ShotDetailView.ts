@@ -5,12 +5,13 @@ import TabPanel from 'primevue/tabpanel';
 import TraceVisualizer from './RawTraceVisualizer';
 import ProcessedTraceVisualizer from './ProcessedTraceVisualizer';
 import ProcessedStabilityPlot from './ProcessedStabilityPlot';
+import ProcessedSpeedPlot from './ProcessedSpeedPlot';
 import store from '../store';
 import { ensureData } from '../dataLoader';
 
 export default defineComponent({
   name: 'ShotDetailView',
-  components: { TabView, TabPanel, TraceVisualizer, ProcessedTraceVisualizer, ProcessedStabilityPlot },
+  components: { TabView, TabPanel, TraceVisualizer, ProcessedTraceVisualizer, ProcessedStabilityPlot, ProcessedSpeedPlot },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -39,6 +40,9 @@ export default defineComponent({
             <div class="plot-row">
               <ProcessedStabilityPlot :shot="processed" trim-pre-shot />
               <ProcessedStabilityPlot :shot="processed" />
+            </div>
+            <div class="plot-row">
+              <ProcessedSpeedPlot :shot="processed" />
             </div>
             <div class="trace-row">
               <TraceVisualizer :shots="[shot]" />
