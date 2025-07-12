@@ -1,4 +1,4 @@
-import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import * as d3 from 'd3';
 import Button from 'primevue/button';
 import { useCustomIcon } from '../icons';
@@ -215,11 +215,6 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
       onMounted(() => {
         draw();
         d3.select(svgRef.value).call(zoom as any);
-      });
-
-      onUnmounted(() => {
-        timer?.stop();
-        d3.select(svgRef.value).on('.zoom', null);
       });
 
       watch(() => props.shots, draw, { deep: true, immediate: true });

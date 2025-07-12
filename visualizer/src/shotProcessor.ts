@@ -12,19 +12,19 @@ export interface CenterPoint { pitch: number; yaw: number; }
 
 export interface ProcessedShot extends ShotData {
   center: CenterPoint;
-  rel_pitch_moa: Float32Array;
-  rel_yaw_moa: Float32Array;
-  abs_deviation_moa: Float32Array;
-  abs_speed_mm_s: Float32Array;
-  ring_position?: Uint8Array;
+  rel_pitch_moa: number[];
+  rel_yaw_moa: number[];
+  abs_deviation_moa: number[];
+  abs_speed_mm_s: number[];
+  ring_position: number[];
   start_index: number;
   pre_shot_1s_index: number;
   pull_index_calc: number;
   length_1s: number;
   delta_pull: number;
   percent_10: number;
-  speed_pitch_mm_s: Float32Array;
-  speed_yaw_mm_s: Float32Array;
+  speed_pitch_mm_s: number[];
+  speed_yaw_mm_s: number[];
 }
 
 /** Convert degrees to Minutes of Angle (MOA). */
@@ -58,23 +58,6 @@ export const RING_RADII_MM = [
 
 /** Ring radii in MOA corresponding to {@link RING_RADII_MM}. */
 export const RING_RADII_MOA = RING_RADII_MM.map(r => mmToMoa(r));
-
-/** Downsample a numeric array by taking every `factor`-th value. */
-export function downsampleFloat32(data: number[] | Float32Array, factor = 5): Float32Array {
-  const len = Math.ceil(data.length / factor);
-  const out = new Float32Array(len);
-  for (let i = 0, j = 0; i < len; i++, j += factor) {
-    out[i] = data[j];
-  }
-  return out;
-}
-
-/** Compute ring positions lazily from absolute deviation values. */
-export function ringPositionArray(absDev: Float32Array): Uint8Array {
-  const out = new Uint8Array(absDev.length);
-  for (let i = 0; i < absDev.length; i++) out[i] = moaToRing(absDev[i]);
-  return out;
-}
 
 /** Convert MOA distance from centre into ring number (10..1, 0 outside). */
 export function moaToRing(moa: number): number {
@@ -112,12 +95,10 @@ export function getHoldCenter(shot: ShotData): CenterPoint {
  * Convert absolute pitch and yaw to values relative to the hold center
  * and expressed in MOA.
  */
-export function relativeMoaArrays(shot: ShotData, center?: CenterPoint): { rel_pitch: Float32Array; rel_yaw: Float32Array } {
+export function relativeMoaArrays(shot: ShotData, center?: CenterPoint): { rel_pitch: number[]; rel_yaw: number[] } {
   const c = center ?? getHoldCenter(shot);
-  const relPitch = new Float32Array(shot.pitch.length);
-  const relYaw = new Float32Array(shot.yaw.length);
-  for (let i = 0; i < shot.pitch.length; i++) relPitch[i] = degToMoa(shot.pitch[i] - c.pitch);
-  for (let i = 0; i < shot.yaw.length; i++) relYaw[i] = degToMoa(shot.yaw[i] - c.yaw);
+  const relPitch = shot.pitch.map(p => degToMoa(p - c.pitch));
+  const relYaw = shot.yaw.map(y => degToMoa(y - c.yaw));
   return { rel_pitch: relPitch, rel_yaw: relYaw };
 }
 
@@ -179,10 +160,10 @@ export function percentWithinMoa(relPitch: number[], relYaw: number[], start: nu
 }
 
 /** Compute horizontal and vertical speed arrays in mm/s. */
-export function speedArraysMm(relPitch: Float32Array, relYaw: Float32Array, sr: number, mmPerMoa = MM_PER_MOA_10M): { pitch: Float32Array; yaw: Float32Array } {
+export function speedArraysMm(relPitch: number[], relYaw: number[], sr: number, mmPerMoa = MM_PER_MOA_10M): { pitch: number[]; yaw: number[] } {
   const n = Math.min(relPitch.length, relYaw.length);
-  const sp = new Float32Array(n);
-  const sy = new Float32Array(n);
+  const sp: number[] = new Array(n).fill(0);
+  const sy: number[] = new Array(n).fill(0);
   for (let i = 1; i < n; i++) {
     sp[i] = (relPitch[i] - relPitch[i - 1]) * mmPerMoa * sr;
     sy[i] = (relYaw[i] - relYaw[i - 1]) * mmPerMoa * sr;
@@ -191,17 +172,17 @@ export function speedArraysMm(relPitch: Float32Array, relYaw: Float32Array, sr: 
 }
 
 /** Compute absolute deviation array (MOA) from relative pitch/yaw arrays. */
-export function absDeviationArray(relPitch: Float32Array, relYaw: Float32Array): Float32Array {
+export function absDeviationArray(relPitch: number[], relYaw: number[]): number[] {
   const n = Math.min(relPitch.length, relYaw.length);
-  const arr = new Float32Array(n);
+  const arr: number[] = new Array(n).fill(0);
   for (let i = 0; i < n; i++) arr[i] = Math.hypot(relPitch[i], relYaw[i]);
   return arr;
 }
 
 /** Compute absolute speed array (mm/s) from horizontal and vertical speeds. */
-export function absSpeedArray(speedPitch: Float32Array, speedYaw: Float32Array): Float32Array {
+export function absSpeedArray(speedPitch: number[], speedYaw: number[]): number[] {
   const n = Math.min(speedPitch.length, speedYaw.length);
-  const arr = new Float32Array(n);
+  const arr: number[] = new Array(n).fill(0);
   for (let i = 0; i < n; i++) arr[i] = Math.hypot(speedPitch[i], speedYaw[i]);
   return arr;
 }
@@ -221,34 +202,26 @@ export function processShot<T extends ShotData>(shot: T): ProcessedShot {
   const length_1s = segmentLengthMm(rel_pitch, rel_yaw, pre_shot_1s_index, shot_index);
   const delta_pull = distanceBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
   const percent_10 = percentWithinMoa(rel_pitch, rel_yaw, start_index, shot_index, 1.98);
-  const { pitch: speed_pitch_mm_s_f, yaw: speed_yaw_mm_s_f } = speedArraysMm(rel_pitch, rel_yaw, sr);
-  const abs_deviation_moa_f = absDeviationArray(rel_pitch, rel_yaw);
-  const abs_speed_mm_s_f = absSpeedArray(speed_pitch_mm_s_f, speed_yaw_mm_s_f);
-
-  const factor = 5;
-  const rel_pitch_ds = downsampleFloat32(rel_pitch, factor);
-  const rel_yaw_ds = downsampleFloat32(rel_yaw, factor);
-  const abs_deviation_ds = downsampleFloat32(abs_deviation_moa_f, factor);
-  const abs_speed_ds = downsampleFloat32(abs_speed_mm_s_f, factor);
-  const speed_pitch_ds = downsampleFloat32(speed_pitch_mm_s_f, factor);
-  const speed_yaw_ds = downsampleFloat32(speed_yaw_mm_s_f, factor);
-
+  const { pitch: speed_pitch_mm_s, yaw: speed_yaw_mm_s } = speedArraysMm(rel_pitch, rel_yaw, sr);
+  const abs_deviation_moa = absDeviationArray(rel_pitch, rel_yaw);
+  const abs_speed_mm_s = absSpeedArray(speed_pitch_mm_s, speed_yaw_mm_s);
+  const ring_position = abs_deviation_moa.map(moaToRing);
   return {
     ...shot,
-    sample_rate: (shot.sample_rate ?? 400) / factor,
     center,
-    rel_pitch_moa: rel_pitch_ds,
-    rel_yaw_moa: rel_yaw_ds,
-    abs_deviation_moa: abs_deviation_ds,
-    abs_speed_mm_s: abs_speed_ds,
-    start_index: Math.floor(start_index / factor),
-    pre_shot_1s_index: Math.floor(pre_shot_1s_index / factor),
-    pull_index_calc: Math.floor(pull_index_calc / factor),
+    rel_pitch_moa: rel_pitch,
+    rel_yaw_moa: rel_yaw,
+    abs_deviation_moa,
+    abs_speed_mm_s,
+    ring_position,
+    start_index,
+    pre_shot_1s_index,
+    pull_index_calc,
     length_1s,
     delta_pull,
     percent_10,
-    speed_pitch_mm_s: speed_pitch_ds,
-    speed_yaw_mm_s: speed_yaw_ds
+    speed_pitch_mm_s,
+    speed_yaw_mm_s
   } as ProcessedShot;
 }
 
@@ -268,8 +241,6 @@ export default {
   absDeviationArray,
   absSpeedArray,
   moaToRing,
-  downsampleFloat32,
-  ringPositionArray,
   processShot
 };
 
