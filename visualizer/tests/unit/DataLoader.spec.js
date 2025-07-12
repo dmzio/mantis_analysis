@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { loadFromHandle } from '../../src/dataLoader';
 import store from '../../src/store';
 
@@ -18,6 +18,13 @@ function makeFileHandle(pk, order, idx, resolvers) {
 }
 
 describe('loadFromHandle', () => {
+  beforeEach(() => {
+    if (!URL.createObjectURL) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      URL.createObjectURL = vi.fn(() => 'blob:test');
+    }
+  });
   it('reads multiple files in parallel', async () => {
     store.sessions = {};
     store.processed = {};
@@ -44,6 +51,7 @@ describe('loadFromHandle', () => {
   it('stores processed shot data separately', async () => {
     store.sessions = {};
     store.processed = {};
+    store.photos = {};
     const fileHandle = {
       kind: 'file',
       name: 's1.json',
@@ -63,5 +71,36 @@ describe('loadFromHandle', () => {
     await loadFromHandle(handle);
     expect(store.sessions[1].shots).toBeDefined();
     expect(store.processed[1].shots[0].rel_pitch_moa).toBeDefined();
+  });
+
+  it('loads session photos if present', async () => {
+    store.sessions = {};
+    store.processed = {};
+    store.photos = {};
+    const jsonHandle = {
+      kind: 'file',
+      name: '1.json',
+      getFile: vi.fn(() => Promise.resolve({ text: vi.fn(() => Promise.resolve('{"pk":1}')) }))
+    };
+    const photoFile = new File(['x'], '1.jpg', { type: 'image/jpeg' });
+    const photoHandle = {
+      kind: 'file',
+      name: '1.jpg',
+      getFile: vi.fn(() => Promise.resolve(photoFile))
+    };
+    const handle = {
+      name: 'data',
+      values() { return [jsonHandle]; },
+      async getDirectoryHandle(name) {
+        if (name === 'session_photo') {
+          return {
+            async *values() { yield photoHandle; }
+          };
+        }
+        throw new Error('no dir');
+      }
+    };
+    await loadFromHandle(handle);
+    expect(Object.keys(store.photos)).toContain('1');
   });
 });
