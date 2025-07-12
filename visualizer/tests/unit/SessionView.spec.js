@@ -77,6 +77,7 @@ describe("SessionView", () => {
       }
     });
     expect(store.aggregates[1]).toBeTruthy();
+    expect(store.aggregates[1].stats.length_1s).toBeDefined();
   });
 
   it("redirects to landing when empty", async () => {

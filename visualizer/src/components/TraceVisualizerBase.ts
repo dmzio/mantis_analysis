@@ -15,7 +15,8 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
     name,
     components: { Button, PlayIcon, PauseIcon },
     props: {
-      shots: { type: Array as () => T[], required: true }
+      shots: { type: Array as () => T[], required: true },
+      title: { type: String, default: '' }
     },
     setup(props) {
       const svgRef = ref<SVGSVGElement | null>(null);
@@ -229,6 +230,7 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
     },
     template: `
       <div class="trace-visualizer">
+        <h4 v-if="title">{{ title }}</h4>
         <svg ref="svgRef" class="trace-svg" data-testid="trace-svg"></svg>
         <div class="trace-controls">
           <input type="range" min="0" max="1" step="0.01" v-model.number="progress" data-testid="timeline" class="timeline" />

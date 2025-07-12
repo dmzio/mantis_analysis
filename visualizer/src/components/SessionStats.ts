@@ -11,7 +11,7 @@ export default defineComponent({
     <div class="card session-stats">
       <h3>Session Stats</h3>
       <p class="stat-summary">Total shots: {{ shots.length }}</p>
-      <TraceVisualizer :shots="shots" />
+      <TraceVisualizer :shots="shots" title="Raw trace" />
     </div>
   `
 });

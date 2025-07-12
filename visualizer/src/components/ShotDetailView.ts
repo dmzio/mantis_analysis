@@ -60,7 +60,7 @@ export default defineComponent({
             </div>
             <div class="plot-row">
               <RingStabilityPlot :shot="processed" />
-              <ProcessedTraceVisualizer :shots="[processed]" />
+              <ProcessedTraceVisualizer :shots="[processed]" title="Processed trace" />
             </div>
           </div>
         </TabPanel>
@@ -70,7 +70,7 @@ export default defineComponent({
               <ProcessedStabilityPlot :shot="processed" trim-pre-shot />
             </div>
             <div class="trace-row">
-              <TraceVisualizer :shots="[shot]" />
+              <TraceVisualizer :shots="[shot]" title="Raw trace" />
             </div>
           </div>
         </TabPanel>
