@@ -1,10 +1,20 @@
-name: CI
+name: Visualizer CI
 on:
   push:
+    paths:
+      - 'visualizer/**'
+      - '.github/workflows/ci.yml'
   pull_request:
+    paths:
+      - 'visualizer/**'
+      - '.github/workflows/ci.yml'
+
 jobs:
-  test:
+  build-test:
     runs-on: ubuntu-latest
+    concurrency:
+      group: viz-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     defaults:
       run:
         working-directory: visualizer

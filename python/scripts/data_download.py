@@ -14,7 +14,6 @@ Changes vs v4.3
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from datetime import datetime
@@ -22,7 +21,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 import requests
-from pydantic import BaseModel, Extra, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # End‑user configuration
@@ -32,38 +31,37 @@ from pydantic import BaseModel, Extra, Field, validator
 class Config(BaseModel):
     """Secrets + runtime overrides (env fallbacks supported)."""
 
+    model_config = ConfigDict(extra="ignore")
+
     user_pk: int
-    user_secret_key: Optional[str] = Field(None, description="API auth secret")
+    user_secret_key: Optional[str] = Field(None, description="API auth secret", validate_default=True)
 
-    username: Optional[str] = None
-    password: Optional[str] = None
+    username: Optional[str] = Field(None, validate_default=True)
+    password: Optional[str] = Field(None, validate_default=True)
 
-    csrftoken: Optional[str] = None  # manual override
-    cookie: Optional[str] = None  # raw Cookie header string
+    csrftoken: Optional[str] = Field(None, validate_default=True)  # manual override
+    cookie: Optional[str] = Field(None, validate_default=True)  # raw Cookie header string
 
     # env fallbacks -------------------------------------------------
-    @validator("user_secret_key", pre=True, always=True)
+    @field_validator("user_secret_key", mode="before")
     def _secret_env(cls, v):
         return v or os.getenv("MANTISX_SECRET_KEY")
 
-    @validator("username", pre=True, always=True)
+    @field_validator("username", mode="before")
     def _username_env(cls, v):
         return v or os.getenv("MANTISX_USERNAME")
 
-    @validator("password", pre=True, always=True)
+    @field_validator("password", mode="before")
     def _password_env(cls, v):
         return v or os.getenv("MANTISX_PASSWORD")
 
-    @validator("csrftoken", pre=True, always=True)
+    @field_validator("csrftoken", mode="before")
     def _csrf_env(cls, v):
         return v or os.getenv("MANTISX_CSRF_TOKEN")
 
-    @validator("cookie", pre=True, always=True)
+    @field_validator("cookie", mode="before")
     def _cookie_env(cls, v):
         return v or os.getenv("MANTISX_COOKIE")
-
-    class Config:
-        extra = Extra.ignore
 
 
 # ---------------------------------------------------------------------------
@@ -92,8 +90,7 @@ class Shot(BaseModel):
     sample_rate: int
 
     # everything else (extras, absolute_pitch, etc.)
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class Firearm(BaseModel):
@@ -101,8 +98,7 @@ class Firearm(BaseModel):
     model: Optional[str]
     caliber: Optional[str]
 
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class SessionDetail(BaseModel):
@@ -142,8 +138,7 @@ class SessionDetail(BaseModel):
     firearm: Optional[Firearm]
     shots: List[Shot]
 
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class SessionResponse(BaseModel):
@@ -159,8 +154,7 @@ class SessionBaseInfo(BaseModel):
     drill_name: str
     shot_count: int
 
-    class Config:
-        extra = Extra.ignore
+    model_config = ConfigDict(extra="ignore")
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +315,7 @@ def _existing() -> Set[str]:
 
 
 def main():
-    cfg = Config.parse_obj(json.loads(CONFIG_PATH.read_text()))
+    cfg = Config.model_validate_json(CONFIG_PATH.read_text())
 
     sess = requests.Session()
     sess.headers.update(DEFAULT_HEADERS)
