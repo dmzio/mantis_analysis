@@ -16,7 +16,12 @@ export default defineComponent({
     const sessionPk = computed(() => Number(route.params.pk));
     const session = reactive<any>({ shots: [] as any[] });
     const shots = computed(() => session.shots as any[]);
-    const photo = computed(() => session.photo as string | undefined);
+    const photo = computed(() => {
+      return (
+        (store.photos as Record<number, string>)[sessionPk.value] ||
+        (session.photo as string | undefined)
+      );
+    });
     const processedShots = computed(() => {
       const psession = (store.processed as Record<number, any>)[sessionPk.value] || { shots: [] };
       return psession.shots || [];

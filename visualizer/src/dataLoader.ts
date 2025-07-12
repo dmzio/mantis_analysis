@@ -10,9 +10,10 @@ export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurre
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('data_folder', handle.name);
     }
-    const sessions: Record<number, any> = {};
-    const processed: Record<number, any> = {};
-    const entries: FileSystemHandle[] = [];
+  const sessions: Record<number, any> = {};
+  const processed: Record<number, any> = {};
+  const photos: Record<number, string> = {};
+  const entries: FileSystemHandle[] = [];
     for await (const entry of handle.values()) {
       if (entry.kind === 'file' && entry.name.endsWith('.json')) {
         entries.push(entry);
@@ -40,8 +41,28 @@ export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurre
       });
       await Promise.all(batch);
     }
+
+    // load session photos from optional subdirectory
+    try {
+      const photoDir = await handle.getDirectoryHandle('session_photo');
+      for await (const entry of photoDir.values()) {
+        if (entry.kind !== 'file') continue;
+        const match = /^([0-9]+)/.exec(entry.name);
+        if (!match) continue;
+        const sid = Number(match[1]);
+        try {
+          const file = await (entry as FileSystemFileHandle).getFile();
+          photos[sid] = URL.createObjectURL(file);
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // directory missing -> ignore
+    }
     store.sessions = sessions;
     store.processed = processed;
+    store.photos = photos;
   } finally {
     store.loading = false;
   }

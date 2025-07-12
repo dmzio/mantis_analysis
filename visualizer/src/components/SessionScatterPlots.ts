@@ -27,9 +27,19 @@ export default defineComponent({
         if (val !== null && transform) val = transform(val);
         values.push(val);
       });
-      return { labels, datasets: [
-        { label: field, data: values, showLine: false, borderColor: '#37b24d', backgroundColor: '#37b24d' }
-      ] };
+      return {
+        labels,
+        datasets: [
+          {
+            label: field,
+            data: values,
+            showLine: false,
+            borderColor: '#37b24d',
+            backgroundColor: '#37b24d',
+            pointRadius: 3
+          }
+        ]
+      };
     }
     const charts = computed(() => [
       { label: '% in 10', data: buildData('percent_10', v => v * 100), yLabel: '%' },
@@ -39,7 +49,10 @@ export default defineComponent({
     const options = (y: string) => ({
       responsive: true,
       maintainAspectRatio: false,
-      scales: { x: { title: { display: true, text: 'Date' } }, y: { title: { display: true, text: y } } }
+      scales: {
+        x: { type: 'category', title: { display: true, text: 'Date' } },
+        y: { title: { display: true, text: y } }
+      }
     });
     return { charts, options };
   },
@@ -47,7 +60,7 @@ export default defineComponent({
     <div class="session-scatter-plots">
       <div v-for="chart in charts" :key="chart.label" class="card">
         <h4>{{ chart.label }}</h4>
-        <Chart type="scatter" :data="chart.data" :options="options(chart.yLabel)" />
+        <Chart type="line" :data="chart.data" :options="options(chart.yLabel)" />
       </div>
     </div>
   `
