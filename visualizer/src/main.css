@@ -273,6 +273,9 @@ header {
 .processed-stability-plot .p-chart {
   height: 100%;
 }
+.processed-speed-plot .p-chart {
+  height: 100%;
+}
 
 .shot-layout .trace-row {
   flex: 1 1 auto;

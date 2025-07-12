@@ -10,7 +10,7 @@ function prepare(shots: ProcessedShot[]): ShotData[] {
     return {
       pitch,
       yaw,
-      pull_index: (s.pull_index ?? 0) - start,
+      pull_index: (s.pull_index_calc ?? 0) - start,
       shot_index: (s.shot_index ?? pitch.length - 1) - start,
       sample_rate: s.sample_rate
     } as ShotData;
