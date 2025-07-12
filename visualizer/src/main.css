@@ -158,6 +158,13 @@ header {
   font-size: 1.25rem;
 }
 
+.session-photo {
+  max-width: 400px;
+  width: 100%;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
 .card {
   background: var(--surface-800);
   color: var(--text-color);
