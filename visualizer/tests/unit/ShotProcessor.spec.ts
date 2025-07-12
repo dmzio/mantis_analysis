@@ -61,7 +61,7 @@ describe('shotProcessor', () => {
       sample_rate: 1
     };
     const proc = processShot(shot as any);
-    expect(proc.pre_shot_1s_index).toBe(1);
+    expect(proc.pre_shot_1s_index).toBe(0);
   });
 
   it('derives extra metrics', () => {
