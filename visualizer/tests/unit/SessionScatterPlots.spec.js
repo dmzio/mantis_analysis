@@ -24,4 +24,22 @@ describe('SessionScatterPlots', () => {
     expect(charts[0].data.datasets[0].data[0]).toBe(50);
     expect(charts[2].label).toContain('Δpull');
   });
+
+  it('sorts sessions chronologically', () => {
+    store.processed = {
+      1: { shots: [{ percent_10: 0.5 }] },
+      2: { shots: [{ percent_10: 0.6 }] }
+    };
+    const sessions = [
+      { pk: 2, date: '2024-01-02', fmtDate: '2' },
+      { pk: 1, date: '2024-01-01', fmtDate: '1' }
+    ];
+    const wrapper = mount(SessionScatterPlots, {
+      props: { sessions },
+      global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
+    });
+    const labels = wrapper.vm.charts[0].data.labels;
+    expect(labels[0]).toBe('1');
+    expect(labels[1]).toBe('2');
+  });
 });

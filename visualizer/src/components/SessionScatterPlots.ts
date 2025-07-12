@@ -17,9 +17,15 @@ export default defineComponent({
   },
   setup(props) {
     function buildData(field: string, transform?: (v: number) => number) {
+      // sort sessions chronologically so x-axis shows oldest to newest
+      const sorted = props.sessions.slice().sort((a: any, b: any) => {
+        const da = a.date ? new Date(a.date).getTime() : 0;
+        const db = b.date ? new Date(b.date).getTime() : 0;
+        return da - db;
+      });
       const labels: string[] = [];
       const values: (number | null)[] = [];
-      props.sessions.forEach((s: any) => {
+      sorted.forEach((s: any) => {
         labels.push(s.fmtDate || (s.date ? formatDate(s.date) : ''));
         const processed = store.processed[s.pk]?.shots || [];
         const stats = aggregateFields(processed, [field])[field];

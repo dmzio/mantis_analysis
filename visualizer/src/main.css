@@ -257,6 +257,24 @@ header {
   background: var(--primary-color);
 }
 
+.session-scatter-plots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.session-scatter-plots .card {
+  flex: 0 0 50%;
+  height: 30vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.session-scatter-plots .p-chart {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
 .shot-layout {
   flex: 1 1 auto;
   display: flex;
