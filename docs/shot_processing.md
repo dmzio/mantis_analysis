@@ -41,7 +41,7 @@ The processor derives further data used throughout the visualizer:
 - **pull_index_calc** – index located 0.25&nbsp;s before the shot.
 - **length_1s** – path length covered during the last second before the shot in millimetres.
 - **delta_pull** – distance between the pull index and the shot point in millimetres.
-- **percent_10** – fraction of the trimmed trace that stays within the 10&nbsp;ring (1.98&nbsp;MOA).
+- **percent_10** – fraction of the trimmed trace that stays within the 10&nbsp;ring (1.98&nbsp;MOA). Displayed as a percentage.
 - **speed_pitch_mm_s / speed_yaw_mm_s** – vertical and horizontal speeds on the target in mm/s.
 
 The default conversion of MOA to millimetres assumes the ISSF 10&nbsp;m pistol target where one MOA equals approximately 2.9&nbsp;mm.

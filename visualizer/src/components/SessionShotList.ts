@@ -21,15 +21,25 @@ export default defineComponent({
   methods: {
     toDetails(row: any) {
       this.router.push(`/session/${this.sessionPk}/shot/${row.pk}`);
+    },
+    fmt(val: number): string {
+      if (val === null || val === undefined) return '';
+      const n = Number(val);
+      if (!isFinite(n)) return String(val);
+      const str = n.toPrecision(4);
+      return parseFloat(str).toString();
+    },
+    fmtPercent(val: number): string {
+      return this.fmt(val * 100);
     }
   },
   template: `
     <div class="card">
       <DataTable :value="shots" data-testid="shot-table">
         <Column field="score" header="Score" />
-        <Column field="percent_10" header="%∈10" />
-        <Column field="length_1s" header="L₁s" />
-        <Column field="delta_pull" header="Δpull" />
+        <Column field="percent_10" header="%∈10" :body="r => fmtPercent(r.percent_10)" />
+        <Column field="length_1s" header="L₁s" :body="r => fmt(r.length_1s)" />
+        <Column field="delta_pull" header="Δpull" :body="r => fmt(r.delta_pull)" />
         <Column header="">
           <template #body="slotProps">
             <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">
