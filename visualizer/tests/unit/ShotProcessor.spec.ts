@@ -11,6 +11,9 @@ import {
   distanceBetweenMm,
   percentWithinMoa,
   speedArraysMm,
+  absDeviationArray,
+  absSpeedArray,
+  moaToRing,
   MM_PER_MOA_10M
 } from '../../src/shotProcessor';
 
@@ -78,5 +81,11 @@ describe('shotProcessor', () => {
     expect(pct).toBeCloseTo(1);
     const speeds = speedArraysMm([0,0,0,0], [0,0.5,1,1.5], 4, MM_PER_MOA_10M);
     expect(speeds.yaw[1]).toBeCloseTo(0.5 * MM_PER_MOA_10M * 4);
+    const absDev = absDeviationArray([0,1,2], [0,0,0]);
+    expect(absDev[2]).toBeCloseTo(2);
+    const absSpd = absSpeedArray([0,1,2], [0,0,0]);
+    expect(absSpd[2]).toBeCloseTo(2);
+    expect(moaToRing(1.9)).toBe(10);
+    expect(moaToRing(6)).toBeLessThan(10);
   });
 });

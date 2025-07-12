@@ -14,6 +14,9 @@ export interface ProcessedShot extends ShotData {
   center: CenterPoint;
   rel_pitch_moa: number[];
   rel_yaw_moa: number[];
+  abs_deviation_moa: number[];
+  abs_speed_mm_s: number[];
+  ring_position: number[];
   start_index: number;
   pre_shot_1s_index: number;
   pull_index_calc: number;
@@ -45,6 +48,23 @@ export function moaToMm(moa: number, mmPerMoa = MM_PER_MOA_10M): number {
 /** Convert millimetres to MOA. */
 export function mmToMoa(mm: number, mmPerMoa = MM_PER_MOA_10M): number {
   return mm / mmPerMoa;
+}
+
+/** Ring radii (10 to 1) for ISSF 10m pistol target in millimetres. */
+export const RING_RADII_MM = [
+  5.75, 13.75, 21.75, 29.75, 37.75,
+  45.75, 53.75, 61.75, 69.75, 77.75
+];
+
+/** Ring radii in MOA corresponding to {@link RING_RADII_MM}. */
+export const RING_RADII_MOA = RING_RADII_MM.map(r => mmToMoa(r));
+
+/** Convert MOA distance from centre into ring number (10..1, 0 outside). */
+export function moaToRing(moa: number): number {
+  for (let i = 0; i < RING_RADII_MOA.length; i++) {
+    if (moa <= RING_RADII_MOA[i]) return 10 - i;
+  }
+  return 0;
 }
 
 /**
@@ -151,6 +171,22 @@ export function speedArraysMm(relPitch: number[], relYaw: number[], sr: number, 
   return { pitch: sp, yaw: sy };
 }
 
+/** Compute absolute deviation array (MOA) from relative pitch/yaw arrays. */
+export function absDeviationArray(relPitch: number[], relYaw: number[]): number[] {
+  const n = Math.min(relPitch.length, relYaw.length);
+  const arr: number[] = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) arr[i] = Math.hypot(relPitch[i], relYaw[i]);
+  return arr;
+}
+
+/** Compute absolute speed array (mm/s) from horizontal and vertical speeds. */
+export function absSpeedArray(speedPitch: number[], speedYaw: number[]): number[] {
+  const n = Math.min(speedPitch.length, speedYaw.length);
+  const arr: number[] = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) arr[i] = Math.hypot(speedPitch[i], speedYaw[i]);
+  return arr;
+}
+
 /**
  * Fully process a shot by calculating the hold center, converting
  * to relative MOA values and determining the start index.
@@ -167,11 +203,17 @@ export function processShot<T extends ShotData>(shot: T): ProcessedShot {
   const delta_pull = distanceBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
   const percent_10 = percentWithinMoa(rel_pitch, rel_yaw, start_index, shot_index, 1.98);
   const { pitch: speed_pitch_mm_s, yaw: speed_yaw_mm_s } = speedArraysMm(rel_pitch, rel_yaw, sr);
+  const abs_deviation_moa = absDeviationArray(rel_pitch, rel_yaw);
+  const abs_speed_mm_s = absSpeedArray(speed_pitch_mm_s, speed_yaw_mm_s);
+  const ring_position = abs_deviation_moa.map(moaToRing);
   return {
     ...shot,
     center,
     rel_pitch_moa: rel_pitch,
     rel_yaw_moa: rel_yaw,
+    abs_deviation_moa,
+    abs_speed_mm_s,
+    ring_position,
     start_index,
     pre_shot_1s_index,
     pull_index_calc,
@@ -196,6 +238,9 @@ export default {
   distanceBetweenMm,
   percentWithinMoa,
   speedArraysMm,
+  absDeviationArray,
+  absSpeedArray,
+  moaToRing,
   processShot
 };
 

@@ -6,12 +6,25 @@ import TraceVisualizer from './RawTraceVisualizer';
 import ProcessedTraceVisualizer from './ProcessedTraceVisualizer';
 import ProcessedStabilityPlot from './ProcessedStabilityPlot';
 import ProcessedSpeedPlot from './ProcessedSpeedPlot';
+import AbsDeviationPlot from './AbsDeviationPlot';
+import AbsSpeedPlot from './AbsSpeedPlot';
+import RingStabilityPlot from './RingStabilityPlot';
 import store from '../store';
 import { ensureData } from '../dataLoader';
 
 export default defineComponent({
   name: 'ShotDetailView',
-  components: { TabView, TabPanel, TraceVisualizer, ProcessedTraceVisualizer, ProcessedStabilityPlot, ProcessedSpeedPlot },
+  components: {
+    TabView,
+    TabPanel,
+    TraceVisualizer,
+    ProcessedTraceVisualizer,
+    ProcessedStabilityPlot,
+    ProcessedSpeedPlot,
+    AbsDeviationPlot,
+    AbsSpeedPlot,
+    RingStabilityPlot
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -38,15 +51,26 @@ export default defineComponent({
         <TabPanel header="Track">
           <div class="shot-layout">
             <div class="plot-row">
-              <ProcessedStabilityPlot :shot="processed" trim-pre-shot />
+              <AbsDeviationPlot :shot="processed" />
               <ProcessedStabilityPlot :shot="processed" />
             </div>
             <div class="plot-row">
+              <AbsSpeedPlot :shot="processed" />
               <ProcessedSpeedPlot :shot="processed" />
+            </div>
+            <div class="plot-row">
+              <RingStabilityPlot :shot="processed" />
+              <ProcessedTraceVisualizer :shots="[processed]" />
+            </div>
+          </div>
+        </TabPanel>
+        <TabPanel header="Raw">
+          <div class="shot-layout">
+            <div class="plot-row">
+              <ProcessedStabilityPlot :shot="processed" trim-pre-shot />
             </div>
             <div class="trace-row">
               <TraceVisualizer :shots="[shot]" />
-              <ProcessedTraceVisualizer :shots="[processed]" />
             </div>
           </div>
         </TabPanel>
