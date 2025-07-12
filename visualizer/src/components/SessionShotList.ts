@@ -30,16 +30,29 @@ export default defineComponent({
       return parseFloat(str).toString();
     },
     fmtPercent(val: number): string {
-      return this.fmt(val * 100);
+      if (val === null || val === undefined) return '';
+      return this.fmt(Number(val) * 100);
     }
   },
   template: `
     <div class="card">
       <DataTable :value="shots" data-testid="shot-table">
         <Column field="score" header="Score" />
-        <Column field="percent_10" header="%∈10" :body="r => fmtPercent(r.percent_10)" />
-        <Column field="length_1s" header="L₁s" :body="r => fmt(r.length_1s)" />
-        <Column field="delta_pull" header="Δpull" :body="r => fmt(r.delta_pull)" />
+        <Column field="percent_10" header="∈10, %">
+          <template #body="slotProps">
+            {{ fmtPercent(slotProps.data.percent_10) }}
+          </template>
+        </Column>
+        <Column field="length_1s" header="L₁s, mm">
+          <template #body="slotProps">
+            {{ fmt(slotProps.data.length_1s) }}
+          </template>
+        </Column>
+        <Column field="delta_pull" header="Δpull, mm">
+          <template #body="slotProps">
+            {{ fmt(slotProps.data.delta_pull) }}
+          </template>
+        </Column>
         <Column header="">
           <template #body="slotProps">
             <Button class="p-button-text p-button-sm" @click="toDetails(slotProps.data)">
