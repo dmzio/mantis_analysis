@@ -27,12 +27,15 @@ describe('ShotDetailView', () => {
           ProcessedTraceVisualizer: { template: '<svg></svg>' },
           ProcessedStabilityPlot: { template: '<canvas></canvas>' },
           ProcessedSpeedPlot: { template: '<canvas></canvas>' },
+          AbsDeviationPlot: { template: '<canvas></canvas>' },
+          AbsSpeedPlot: { template: '<canvas></canvas>' },
+          RingStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
-    expect(wrapper.findAll('canvas').length).toBe(3);
+    expect(wrapper.findAll('canvas').length).toBe(6);
   });
 
   it('renders sidebar with breadcrumb', async () => {
@@ -65,6 +68,9 @@ describe('ShotDetailView', () => {
           RawTraceVisualizer: { template: '<svg></svg>' },
           ProcessedTraceVisualizer: { template: '<svg></svg>' },
           ProcessedStabilityPlot: { template: '<canvas></canvas>' },
+          AbsDeviationPlot: { template: '<canvas></canvas>' },
+          AbsSpeedPlot: { template: '<canvas></canvas>' },
+          RingStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }
