@@ -1,6 +1,7 @@
 name: Visualizer CI
 on:
   push:
+    branches: [main]
     paths:
       - 'visualizer/**'
       - '.github/workflows/ci.yml'
@@ -13,7 +14,8 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     concurrency:
-      group: viz-${{ github.event.pull_request.number || github.ref }}
+      # Use the same group for push and pull_request to avoid duplicate jobs
+      group: viz-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     defaults:
       run:
