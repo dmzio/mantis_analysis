@@ -17,7 +17,7 @@ describe('SessionStats', () => {
       { pitch: [0,0], yaw: [0,0] }
     ];
     const wrapper = mount(SessionStats, {
-      props: { shots },
+      props: { shots, photo: '/foo.jpg' },
       global: {
         plugins: [PrimeVue],
         stubs: {
@@ -26,5 +26,6 @@ describe('SessionStats', () => {
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
+    expect(wrapper.find('img.session-photo').attributes('src')).toBe('/foo.jpg');
   });
 });

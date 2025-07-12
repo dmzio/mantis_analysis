@@ -6,7 +6,7 @@ import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
 import SessionSidebar from "../../src/components/SessionSidebar";
 
-store.sessions = { 1: { pk: 1, shots: [{pk:11, score:"95", pitch:[0,0], yaw:[0,0]}] } };
+store.sessions = { 1: { pk: 1, photo: '/foo.jpg', shots: [{pk:11, score:"95", pitch:[0,0], yaw:[0,0]}] } };
 store.processed = { 1: { shots: [{
   pk:11,
   score:"95",
@@ -42,7 +42,9 @@ describe("SessionView", () => {
         }
       }
     });
+    await wrapper.vm.$nextTick();
     expect(wrapper.find('svg').exists()).toBe(true);
+    expect(wrapper.find('img.session-photo').attributes('src')).toBe('/foo.jpg');
   });
 
   it("renders sidebar with shot list", async () => {
