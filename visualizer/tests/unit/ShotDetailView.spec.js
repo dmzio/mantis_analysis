@@ -25,14 +25,13 @@ describe('ShotDetailView', () => {
           TabPanel: { template: '<div><slot /></div>' },
           RawTraceVisualizer: { template: '<svg></svg>' },
           ProcessedTraceVisualizer: { template: '<svg></svg>' },
-          RawStabilityPlot: { template: '<canvas></canvas>' },
           ProcessedStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
-    expect(wrapper.find('canvas').exists()).toBe(true);
+    expect(wrapper.findAll('canvas').length).toBe(2);
   });
 
   it('renders sidebar with breadcrumb', async () => {
@@ -64,7 +63,6 @@ describe('ShotDetailView', () => {
           TabPanel: { template: '<div><slot /></div>' },
           RawTraceVisualizer: { template: '<svg></svg>' },
           ProcessedTraceVisualizer: { template: '<svg></svg>' },
-          RawStabilityPlot: { template: '<canvas></canvas>' },
           ProcessedStabilityPlot: { template: '<canvas></canvas>' },
           Chart: { template: '<canvas></canvas>' }
         }

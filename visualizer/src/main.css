@@ -270,7 +270,6 @@ header {
   min-height: 0;
 }
 
-.raw-stability-plot .p-chart,
 .processed-stability-plot .p-chart {
   height: 100%;
 }

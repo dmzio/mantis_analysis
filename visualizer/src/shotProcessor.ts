@@ -15,6 +15,7 @@ export interface ProcessedShot extends ShotData {
   rel_pitch_moa: number[];
   rel_yaw_moa: number[];
   start_index: number;
+  pre_shot_1s_index: number;
 }
 
 /** Convert degrees to Minutes of Angle (MOA). */
@@ -88,11 +89,15 @@ export function processShot<T extends ShotData>(shot: T): ProcessedShot {
   const center = getHoldCenter(shot);
   const { rel_pitch, rel_yaw } = relativeMoaArrays(shot, center);
   const start_index = findStartIndex(shot, center);
+  const sr = shot.sample_rate ?? 400;
+  const shot_index = shot.shot_index ?? Math.min(shot.pitch.length, shot.yaw.length) - 1;
+  const pre_shot_1s_index = Math.max(0, shot_index - sr);
   return Object.assign(shot, {
     center,
     rel_pitch_moa: rel_pitch,
     rel_yaw_moa: rel_yaw,
-    start_index
+    start_index,
+    pre_shot_1s_index
   });
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { degToMoa, moaToDeg, getHoldCenter, relativeMoaArrays, findStartIndex } from '../../src/shotProcessor';
+import { degToMoa, moaToDeg, getHoldCenter, relativeMoaArrays, findStartIndex, processShot } from '../../src/shotProcessor';
 
 const sampleShot = {
   pitch: [1, 1.1, 1.2, 1.3, 1.4],
@@ -35,5 +35,16 @@ describe('shotProcessor', () => {
     };
     const start = findStartIndex(shot, { pitch: 1, yaw: 0 }, 60);
     expect(start).toBe(2);
+  });
+
+  it('computes pre-shot index', () => {
+    const shot = {
+      pitch: [0,0,0],
+      yaw: [0,0,0],
+      shot_index: 2,
+      sample_rate: 1
+    };
+    const proc = processShot(shot as any);
+    expect(proc.pre_shot_1s_index).toBe(1);
   });
 });
