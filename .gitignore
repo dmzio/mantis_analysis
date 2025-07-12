@@ -325,3 +325,4 @@ fabric.properties
 visualizer/node_modules/
 visualizer/package-lock.json
 visualizer/test-results/
+/python/config.json

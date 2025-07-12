@@ -35,6 +35,9 @@ class Config(BaseModel):
     user_pk: int
     user_secret_key: Optional[str] = Field(None, description="API auth secret")
 
+    username: Optional[str] = None
+    password: Optional[str] = None
+
     csrftoken: Optional[str] = None  # manual override
     cookie: Optional[str] = None  # raw Cookie header string
 
@@ -42,6 +45,14 @@ class Config(BaseModel):
     @validator("user_secret_key", pre=True, always=True)
     def _secret_env(cls, v):
         return v or os.getenv("MANTISX_SECRET_KEY")
+
+    @validator("username", pre=True, always=True)
+    def _username_env(cls, v):
+        return v or os.getenv("MANTISX_USERNAME")
+
+    @validator("password", pre=True, always=True)
+    def _password_env(cls, v):
+        return v or os.getenv("MANTISX_PASSWORD")
 
     @validator("csrftoken", pre=True, always=True)
     def _csrf_env(cls, v):
@@ -198,6 +209,32 @@ def _inject_cookies(sess: requests.Session, cfg: Config) -> None:
         sess.headers["X-CSRFToken"] = token
 
 
+def _login(sess: requests.Session, cfg: Config) -> None:
+    """Authenticate using provided credentials and populate cookies."""
+    if not (cfg.username and cfg.password):
+        return
+
+    if "csrftoken" not in sess.cookies:
+        try:
+            sess.get(f"{BASE}/login/", timeout=60)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("login page failed: %s", exc)
+    token = sess.cookies.get("csrftoken")
+    if token:
+        sess.headers["X-CSRFToken"] = token
+
+    payload = {"username": cfg.username, "password": cfg.password}
+    resp = sess.post(f"{BASE}/verify", json=payload, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    if not data.get("success"):
+        raise RuntimeError(f"login failed: {data}")
+
+    token = sess.cookies.get("csrftoken")
+    if token:
+        sess.headers["X-CSRFToken"] = token
+
+
 # ---------------------------------------------------------------------------
 # HTTP wrappers
 # ---------------------------------------------------------------------------
@@ -289,6 +326,8 @@ def main():
     sess = requests.Session()
     sess.headers.update(DEFAULT_HEADERS)
     _inject_cookies(sess, cfg)
+    if "csrftoken" not in sess.cookies:
+        _login(sess, cfg)
 
     remote = get_session_list(sess, cfg)
     missing = [sid for sid in remote if sid not in _existing()]
