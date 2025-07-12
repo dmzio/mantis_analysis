@@ -10,19 +10,22 @@ export interface ShotData {
 
 export interface CenterPoint { pitch: number; yaw: number; }
 
-export interface ProcessedShot extends ShotData {
+export interface PreprocessedShot extends ShotData {
   center: CenterPoint;
   rel_pitch_moa: number[];
   rel_yaw_moa: number[];
-  abs_deviation_moa: number[];
-  abs_speed_mm_s: number[];
-  ring_position: number[];
   start_index: number;
   pre_shot_1s_index: number;
   pull_index_calc: number;
   length_1s: number;
   delta_pull: number;
   percent_10: number;
+}
+
+export interface ProcessedShot extends PreprocessedShot {
+  abs_deviation_moa: number[];
+  abs_speed_mm_s: number[];
+  ring_position: number[];
   speed_pitch_mm_s: number[];
   speed_yaw_mm_s: number[];
 }
@@ -188,10 +191,10 @@ export function absSpeedArray(speedPitch: number[], speedYaw: number[]): number[
 }
 
 /**
- * Fully process a shot by calculating the hold center, converting
- * to relative MOA values and determining the start index.
+ * Preprocess a shot into relative MOA arrays and scalar metrics. Heavy
+ * transforms used only for visualization are skipped.
  */
-export function processShot<T extends ShotData>(shot: T): ProcessedShot {
+export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
   const center = getHoldCenter(shot);
   const { rel_pitch, rel_yaw } = relativeMoaArrays(shot, center);
   const start_index = findStartIndex(shot, center);
@@ -202,24 +205,37 @@ export function processShot<T extends ShotData>(shot: T): ProcessedShot {
   const length_1s = segmentLengthMm(rel_pitch, rel_yaw, pre_shot_1s_index, shot_index);
   const delta_pull = distanceBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
   const percent_10 = percentWithinMoa(rel_pitch, rel_yaw, start_index, shot_index, 1.98);
-  const { pitch: speed_pitch_mm_s, yaw: speed_yaw_mm_s } = speedArraysMm(rel_pitch, rel_yaw, sr);
-  const abs_deviation_moa = absDeviationArray(rel_pitch, rel_yaw);
-  const abs_speed_mm_s = absSpeedArray(speed_pitch_mm_s, speed_yaw_mm_s);
-  const ring_position = abs_deviation_moa.map(moaToRing);
   return {
     ...shot,
     center,
     rel_pitch_moa: rel_pitch,
     rel_yaw_moa: rel_yaw,
-    abs_deviation_moa,
-    abs_speed_mm_s,
-    ring_position,
     start_index,
     pre_shot_1s_index,
     pull_index_calc,
     length_1s,
     delta_pull,
-    percent_10,
+    percent_10
+  } as PreprocessedShot;
+}
+
+/**
+ * Fully process a shot by calculating the hold center, converting
+ * to relative MOA values and determining the start index.
+ */
+export function processShot<T extends ShotData>(shot: T): ProcessedShot {
+  const base = preprocessShot(shot);
+  const { rel_pitch_moa: rel_pitch, rel_yaw_moa: rel_yaw } = base;
+  const sr = shot.sample_rate ?? 400;
+  const { pitch: speed_pitch_mm_s, yaw: speed_yaw_mm_s } = speedArraysMm(rel_pitch, rel_yaw, sr);
+  const abs_deviation_moa = absDeviationArray(rel_pitch, rel_yaw);
+  const abs_speed_mm_s = absSpeedArray(speed_pitch_mm_s, speed_yaw_mm_s);
+  const ring_position = abs_deviation_moa.map(moaToRing);
+  return {
+    ...base,
+    abs_deviation_moa,
+    abs_speed_mm_s,
+    ring_position,
     speed_pitch_mm_s,
     speed_yaw_mm_s
   } as ProcessedShot;
@@ -241,6 +257,7 @@ export default {
   absDeviationArray,
   absSpeedArray,
   moaToRing,
+  preprocessShot,
   processShot
 };
 

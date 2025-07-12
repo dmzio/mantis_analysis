@@ -71,6 +71,7 @@ describe('loadFromHandle', () => {
     await loadFromHandle(handle);
     expect(store.sessions[1].shots).toBeDefined();
     expect(store.processed[1].shots[0].rel_pitch_moa).toBeDefined();
+    expect(store.aggregates[1]).toBeTruthy();
   });
 
   it('loads session photos if present', async () => {
