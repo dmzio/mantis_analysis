@@ -101,8 +101,11 @@ export default defineComponent({
       absDevPlugins.value = [marker];
       absSpeedPlugins.value = [marker];
       ringPlugins.value = [marker];
-      stats.value = aggregateFields(shots, ['length_1s', 'delta_pull', 'percent_10']);
-      store.aggregates[props.sessionPk] = { stats: stats.value };
+      stats.value = store.aggregates[props.sessionPk]?.stats ||
+        aggregateFields(shots, ['length_1s', 'delta_pull', 'percent_10']);
+      if (!store.aggregates[props.sessionPk]) {
+        store.aggregates[props.sessionPk] = { stats: stats.value };
+      }
     }
 
     watch(() => props.shots, build, { deep: true, immediate: true });

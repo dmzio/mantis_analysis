@@ -1,6 +1,7 @@
 import store from './store';
 import { getHandle } from './fsHandles';
-import { processShot } from './shotProcessor';
+import { preprocessShot } from './shotProcessor';
+import { aggregateFields } from './sessionAggregates';
 
 export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurrency = 10): Promise<void> {
   store.loading = true;
@@ -30,8 +31,10 @@ export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurre
             const session = obj.session || obj;
             sessions[id] = session;
             if (Array.isArray(session.shots)) {
-              processed[id] = {
-                shots: session.shots.map((s: any) => processShot(s))
+              const shots = session.shots.map((s: any) => preprocessShot(s));
+              processed[id] = { shots };
+              store.aggregates[id] = {
+                stats: aggregateFields(shots, ['length_1s', 'delta_pull', 'percent_10'])
               };
             }
           }

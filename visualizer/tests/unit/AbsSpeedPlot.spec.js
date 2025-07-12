@@ -6,7 +6,8 @@ import AbsSpeedPlot from '../../src/components/AbsSpeedPlot';
 describe('AbsSpeedPlot', () => {
   it('renders chart', () => {
     const shot = {
-      abs_speed_mm_s: [0,1,2],
+      rel_pitch_moa: [0,0,0],
+      rel_yaw_moa: [0,1,2],
       shot_index: 2,
       start_index: 0,
       pull_index_calc: 1,

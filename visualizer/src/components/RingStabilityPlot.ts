@@ -1,7 +1,7 @@
 import { defineComponent, ref, watch } from 'vue';
 import Chart from 'primevue/chart';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { ProcessedShot } from '../shotProcessor';
+import { ProcessedShot, absDeviationArray, moaToRing } from '../shotProcessor';
 
 export default defineComponent({
   name: 'RingStabilityPlot',
@@ -27,10 +27,11 @@ export default defineComponent({
     const chartPlugins = ref<any[]>([]);
 
     const build = () => {
-      if (!props.shot.ring_position) return;
+      if (!props.shot.rel_pitch_moa || !props.shot.rel_yaw_moa) return;
       const sr = props.shot.sample_rate ?? 400;
       const start = props.shot.start_index ?? 0;
-      const arr = props.shot.ring_position.slice(start);
+      const arr = (props.shot.ring_position ??
+        absDeviationArray(props.shot.rel_pitch_moa, props.shot.rel_yaw_moa).map(moaToRing)).slice(start);
       const shotIdx = (props.shot.shot_index ?? arr.length - 1) - start;
       const pullIdx = (props.shot.pull_index_calc ?? 0) - start;
       const labels = arr.map((_, i) => ((i - shotIdx) / sr).toFixed(2));

@@ -13,6 +13,8 @@ function meanSd(values: number[]): { mean: number; sd: number } {
  * @param field Which array field to aggregate
  * @param step Downsampling factor (sample step size)
  */
+import { absDeviationArray, speedArraysMm, absSpeedArray, moaToRing } from './shotProcessor';
+
 export function aggregateSeries(shots: any[], field: string, step = 10): SeriesPoint[] {
   if (!shots.length) return [];
   const sr = shots[0].sample_rate ?? 400;
@@ -20,7 +22,19 @@ export function aggregateSeries(shots: any[], field: string, step = 10): SeriesP
   let maxAfter = 0;
   const data = shots.map(s => {
     const start = s.start_index ?? 0;
-    const arr: number[] = (s[field] || []).slice(start);
+    let arr: number[];
+    if (s[field]) {
+      arr = (s[field] as number[]).slice(start);
+    } else if (field === 'abs_deviation_moa') {
+      arr = absDeviationArray(s.rel_pitch_moa, s.rel_yaw_moa).slice(start);
+    } else if (field === 'abs_speed_mm_s') {
+      const sp = speedArraysMm(s.rel_pitch_moa, s.rel_yaw_moa, sr);
+      arr = absSpeedArray(sp.pitch, sp.yaw).slice(start);
+    } else if (field === 'ring_position') {
+      arr = absDeviationArray(s.rel_pitch_moa, s.rel_yaw_moa).map(moaToRing).slice(start);
+    } else {
+      arr = [];
+    }
     const shotIdx = (s.shot_index ?? arr.length - 1) - start;
     minBefore = Math.min(minBefore, -shotIdx);
     maxAfter = Math.max(maxAfter, arr.length - shotIdx);

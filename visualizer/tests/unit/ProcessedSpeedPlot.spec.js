@@ -6,8 +6,8 @@ import ProcessedSpeedPlot from '../../src/components/ProcessedSpeedPlot';
 describe('ProcessedSpeedPlot', () => {
   it('renders chart', () => {
     const shot = {
-      speed_pitch_mm_s: [0,1,2],
-      speed_yaw_mm_s: [0,-1,-2],
+      rel_pitch_moa: [0,0,0],
+      rel_yaw_moa: [0,1,2],
       shot_index: 2,
       sample_rate: 1
     };
