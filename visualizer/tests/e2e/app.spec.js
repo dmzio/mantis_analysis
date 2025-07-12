@@ -81,3 +81,18 @@ test("visualizer theming and controls", async ({ page }) => {
   await expect(page.locator('[data-testid="breadcrumb"]').first()).toBeVisible();
   await expect(page.locator('[data-testid="shot-details"]').first()).toBeVisible();
 });
+
+test('shot list formats numbers', async ({ page }) => {
+  await page.goto('http://localhost:8765/');
+  const sample = {
+    name: 'data/formatting.json',
+    mimeType: 'application/json',
+    buffer: fs.readFileSync(path.resolve(__dirname, 'sample/formatting.json'))
+  };
+  await page.locator('input[type="file"]').setInputFiles([sample]);
+  await page.locator('[data-testid="session-table"] tbody tr button').first().click();
+  const row = page.locator('[data-testid="shot-table"] tbody tr').first();
+  await expect(row).toContainText('25');
+  const header = page.locator('[data-testid="shot-table"] thead');
+  await expect(header).toContainText('L₁s, mm');
+});

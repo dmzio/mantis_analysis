@@ -1,0 +1,16 @@
+{
+  "session": {
+    "pk": 123,
+    "name": "Formatting Session",
+    "shots": [
+      {
+        "pk": 11,
+        "score": "95",
+        "pitch": [0,0,0,0],
+        "yaw": [0,1,1,1],
+        "sample_rate": 400,
+        "shot_index": 3
+      }
+    ]
+  }
+}
