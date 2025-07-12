@@ -27,9 +27,7 @@ export default defineComponent({
       const start = props.trimPreShot
         ? props.shot.pre_shot_1s_index ?? props.shot.start_index ?? 0
         : props.shot.start_index ?? 0;
-      const end = props.trimPreShot
-        ? (props.shot.shot_index ?? 0) + 1
-        : undefined;
+      const end = undefined;
       const pitch = props.shot.rel_pitch_moa.slice(start, end);
       const yaw = props.shot.rel_yaw_moa.slice(start, end);
       const shotIdx = (props.shot.shot_index ?? pitch.length - 1) - start;

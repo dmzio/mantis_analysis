@@ -26,8 +26,8 @@ describe('ProcessedStabilityPlot', () => {
 
   it('trims data when requested', () => {
     const shot = {
-      rel_pitch_moa: [0,1,2],
-      rel_yaw_moa: [0,-1,-2],
+      rel_pitch_moa: [0,1,2,3],
+      rel_yaw_moa: [0,-1,-2,-3],
       shot_index: 2,
       start_index: 0,
       pre_shot_1s_index: 1,
@@ -40,6 +40,6 @@ describe('ProcessedStabilityPlot', () => {
         stubs: { Chart: { template: '<canvas></canvas>' } }
       }
     });
-    expect(wrapper.vm.chartData.datasets[0].data.length).toBe(2);
+    expect(wrapper.vm.chartData.datasets[0].data.length).toBe(3);
   });
 });
