@@ -1,6 +1,7 @@
 name: Python CI
 on:
   push:
+    branches: [main]
     paths:
       - 'python/**'
       - '.github/workflows/python.yml'
@@ -15,7 +16,8 @@ jobs:
   lint-test:
     runs-on: ubuntu-latest
     concurrency:
-      group: python-${{ github.event.pull_request.number || github.ref }}
+      # Share the concurrency group across push and pull_request events
+      group: python-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v3
