@@ -2,5 +2,7 @@
   "user_pk": 5,
   "user_secret_key": "fill me",
   "username": "sss",
-  "password": "qqqqqqqqqq"
+  "password": "qqqqqqqqqq",
+  "start_date": "1970-01-01T00:00:00.000Z",
+  "end_date": null
 }
