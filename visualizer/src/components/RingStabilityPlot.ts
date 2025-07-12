@@ -16,7 +16,8 @@ export default defineComponent({
         x: { title: { display: true, text: 'Time (s)' } },
         y: {
           title: { display: true, text: 'Ring' },
-          ticks: { reverse: true, stepSize: 1, min: 1, max: 10 }
+          reverse: true,
+          ticks: { stepSize: 1, min: 0, max: 10 }
         }
       },
       plugins: {

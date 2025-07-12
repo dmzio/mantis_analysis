@@ -18,5 +18,6 @@ describe('RingStabilityPlot', () => {
     });
     expect(wrapper.find('canvas').exists()).toBe(true);
     expect(wrapper.vm.chartData.datasets[0].data.length).toBe(3);
+    expect(wrapper.vm.chartOptions.scales.y.reverse).toBe(true);
   });
 });
