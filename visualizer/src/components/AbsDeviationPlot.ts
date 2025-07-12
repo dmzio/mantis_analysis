@@ -61,6 +61,7 @@ export default defineComponent({
   },
   template: `
     <div class="abs-deviation-plot">
+      <h4>Absolute deviation</h4>
       <Chart type="line" :data="chartData" :options="chartOptions" :plugins="chartPlugins" />
     </div>
   `

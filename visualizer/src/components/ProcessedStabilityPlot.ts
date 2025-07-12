@@ -87,6 +87,7 @@ export default defineComponent({
   },
   template: `
     <div class="processed-stability-plot">
+      <h4>Processed stability</h4>
       <Chart type="line" :data="chartData" :options="chartOptions" :plugins="chartPlugins" />
     </div>
   `

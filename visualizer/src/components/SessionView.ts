@@ -16,6 +16,10 @@ export default defineComponent({
     const sessionPk = computed(() => Number(route.params.pk));
     const session = reactive<any>({ shots: [] as any[] });
     const shots = computed(() => session.shots as any[]);
+    const processedShots = computed(() => {
+      const psession = (store.processed as Record<number, any>)[sessionPk.value] || { shots: [] };
+      return psession.shots || [];
+    });
     ensureData().then(ok => {
       if (!ok) {
         router.push('/');
@@ -25,7 +29,7 @@ export default defineComponent({
       Object.assign(session, data);
       session.shots = data.shots || [];
     });
-    return { session, shots, sessionPk };
+    return { session, shots, processedShots, sessionPk };
   },
   template: `
     <div class="session-view">
@@ -34,7 +38,7 @@ export default defineComponent({
           <SessionStats :shots="shots" />
         </TabPanel>
         <TabPanel header="Averages">
-          <SessionAggregates :shots="shots" :sessionPk="sessionPk" />
+          <SessionAggregates :shots="processedShots" :sessionPk="sessionPk" />
         </TabPanel>
       </TabView>
     </div>

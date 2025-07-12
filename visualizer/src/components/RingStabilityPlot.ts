@@ -65,6 +65,7 @@ export default defineComponent({
   },
   template: `
     <div class="ring-stability-plot">
+      <h4>Ring stability</h4>
       <Chart type="line" :data="chartData" :options="chartOptions" :plugins="chartPlugins" />
     </div>
   `

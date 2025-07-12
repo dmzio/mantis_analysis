@@ -53,6 +53,7 @@ export default defineComponent({
   },
   template: `
     <div class="processed-speed-plot">
+      <h4>Processed speed</h4>
       <Chart type="line" :data="chartData" :options="chartOptions" :plugins="chartPlugins" />
     </div>
   `
