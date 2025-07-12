@@ -22,6 +22,7 @@ describe('ProcessedStabilityPlot', () => {
     });
     expect(wrapper.find('canvas').exists()).toBe(true);
     expect(wrapper.vm.chartData.datasets[0].data.length).toBe(3);
+    expect(wrapper.vm.chartOptions.plugins.zoom).toBeDefined();
   });
 
   it('trims data when requested', () => {

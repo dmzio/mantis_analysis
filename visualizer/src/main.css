@@ -276,6 +276,11 @@ header {
 .processed-speed-plot .p-chart {
   height: 100%;
 }
+.abs-deviation-plot .p-chart,
+.abs-speed-plot .p-chart,
+.ring-stability-plot .p-chart {
+  height: 100%;
+}
 
 .shot-layout .trace-row {
   flex: 1 1 auto;

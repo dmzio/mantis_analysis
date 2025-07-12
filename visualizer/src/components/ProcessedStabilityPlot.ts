@@ -18,6 +18,12 @@ export default defineComponent({
       scales: {
         x: { title: { display: true, text: 'Time (s)' } },
         y: { title: { display: true, text: 'MOA' } }
+      },
+      plugins: {
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+        }
       }
     });
     const chartPlugins = ref<any[]>([]);
