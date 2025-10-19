@@ -17,15 +17,17 @@ describe('SessionStats', () => {
       { pitch: [0,0], yaw: [0,0] }
     ];
     const wrapper = mount(SessionStats, {
-      props: { shots, photo: '/foo.jpg' },
+      props: { shots, photo: '/foo.jpg', processedShots: shots },
       global: {
         plugins: [PrimeVue],
         stubs: {
-          RawTraceVisualizer: { template: '<svg></svg>' }
+          RawTraceVisualizer: { template: '<svg></svg>' },
+          SessionShotGroup: { template: '<div class="group"></div>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
     expect(wrapper.find('img.session-photo').attributes('src')).toBe('/foo.jpg');
+    expect(wrapper.find('.group').exists()).toBe(true);
   });
 });

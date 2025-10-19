@@ -6,6 +6,7 @@ import {
   relativeMoaArrays,
   findStartIndex,
   processShot,
+  preprocessShot,
   calcPullIndex,
   segmentLengthMm,
   distanceBetweenMm,
@@ -62,6 +63,30 @@ describe('shotProcessor', () => {
     };
     const proc = processShot(shot as any);
     expect(proc.pre_shot_1s_index).toBe(1);
+  });
+
+  it('derives timing metrics and ellipse', () => {
+    const shot = {
+      pitch: [0, 0.01, 0.02, 0.03, 0.04, 0.05],
+      yaw: [0, 0.02, 0.01, 0, -0.01, -0.02],
+      shot_index: 4,
+      sample_rate: 10,
+      trigger_hold: '0.20',
+      trigger_pull: '0.08',
+      split: '1.50',
+      score: '95.0'
+    };
+    const pre = preprocessShot(shot as any);
+    expect(pre.hold_duration_s).toBeGreaterThan(0);
+    expect(pre.trigger_hold_s).toBeCloseTo(0.2);
+    expect(pre.trigger_pull_s).toBeCloseTo(0.08);
+    expect(pre.split_s).toBeCloseTo(1.5);
+    expect(pre.score_numeric).toBeCloseTo(95);
+    expect(pre.impact_pitch_mm).not.toBeNaN();
+    if (pre.hold_ellipse) {
+      expect(pre.ellipse_area_mm2).toBeGreaterThan(0);
+      expect(pre.ellipse_major_mm).toBeGreaterThan(0);
+    }
   });
 
   it('derives extra metrics', () => {

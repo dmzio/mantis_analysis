@@ -32,6 +32,12 @@ export default defineComponent({
     fmtPercent(val: number): string {
       if (val === null || val === undefined) return '';
       return this.fmt(Number(val) * 100);
+    },
+    fmtSeconds(val: number | null | undefined): string {
+      if (val === null || val === undefined) return '';
+      const n = Number(val);
+      if (!isFinite(n)) return '';
+      return n.toFixed(2);
     }
   },
   template: `
@@ -41,6 +47,16 @@ export default defineComponent({
         <Column field="percent_10" header="∈10, %">
           <template #body="slotProps">
             {{ fmtPercent(slotProps.data.percent_10) }}
+          </template>
+        </Column>
+        <Column header="Hold, s">
+          <template #body="slotProps">
+            {{ fmtSeconds(slotProps.data.hold_duration_s) }}
+          </template>
+        </Column>
+        <Column header="Split, s">
+          <template #body="slotProps">
+            {{ fmtSeconds(slotProps.data.split_s) }}
           </template>
         </Column>
         <Column field="length_1s" header="L₁s, mm">

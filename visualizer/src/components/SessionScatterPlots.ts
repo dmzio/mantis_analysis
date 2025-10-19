@@ -50,7 +50,9 @@ export default defineComponent({
     const charts = computed(() => [
       { label: '% in 10', data: buildData('percent_10', v => v * 100), yLabel: '%' },
       { label: 'L₁s (mm)', data: buildData('length_1s'), yLabel: 'mm' },
-      { label: 'Δpull (mm)', data: buildData('delta_pull'), yLabel: 'mm' }
+      { label: 'Δpull (mm)', data: buildData('delta_pull'), yLabel: 'mm' },
+      { label: 'Score', data: buildData('score_numeric'), yLabel: 'Score' },
+      { label: 'Split (s)', data: buildData('split_s'), yLabel: 'Seconds' }
     ]);
     const options = (y: string) => ({
       responsive: true,

@@ -10,6 +10,13 @@ export interface ShotData {
 
 export interface CenterPoint { pitch: number; yaw: number; }
 
+export interface HoldEllipse {
+  major_moa: number;
+  minor_moa: number;
+  angle_deg: number;
+  area_mm2: number;
+}
+
 export interface PreprocessedShot extends ShotData {
   center: CenterPoint;
   rel_pitch_moa: number[];
@@ -20,6 +27,22 @@ export interface PreprocessedShot extends ShotData {
   length_1s: number;
   delta_pull: number;
   percent_10: number;
+  hold_duration_s: number;
+  trigger_hold_s: number | null;
+  trigger_pull_s: number | null;
+  split_s: number | null;
+  score_numeric: number | null;
+  impact_pitch_moa: number;
+  impact_yaw_moa: number;
+  impact_pitch_mm: number;
+  impact_yaw_mm: number;
+  hold_ellipse: HoldEllipse | null;
+  ellipse_major_moa: number | null;
+  ellipse_minor_moa: number | null;
+  ellipse_major_mm: number | null;
+  ellipse_minor_mm: number | null;
+  ellipse_angle_deg: number | null;
+  ellipse_area_mm2: number | null;
 }
 
 export interface ProcessedShot extends PreprocessedShot {
@@ -42,6 +65,90 @@ export function moaToDeg(moa: number): number {
 
 /** Size of one MOA in millimetres for the ISSF 10m pistol target. */
 export const MM_PER_MOA_10M = 200 / 68.75;
+
+const CHI_SQUARE_2D_95 = 5.991; // 95 % confidence interval for 2 degrees of freedom
+
+function parseSeconds(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  const str = String(value).trim();
+  if (!str) return null;
+  const numeric = Number(str.replace(/[^0-9.+-Ee]/g, ''));
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function parseScore(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  const str = String(value).trim();
+  if (!str) return null;
+  const num = Number(str);
+  return Number.isFinite(num) ? num : null;
+}
+
+function computeHoldEllipse(
+  relPitch: number[],
+  relYaw: number[],
+  start: number,
+  end: number,
+  mmPerMoa = MM_PER_MOA_10M
+): HoldEllipse | null {
+  const coords: [number, number][] = [];
+  for (let i = start; i <= end; i++) {
+    if (i < 0 || i >= relPitch.length || i >= relYaw.length) continue;
+    coords.push([relYaw[i], relPitch[i]]);
+  }
+  if (coords.length < 3) return null;
+  let meanX = 0;
+  let meanY = 0;
+  coords.forEach(([x, y]) => {
+    meanX += x;
+    meanY += y;
+  });
+  meanX /= coords.length;
+  meanY /= coords.length;
+  let sxx = 0;
+  let syy = 0;
+  let sxy = 0;
+  coords.forEach(([x, y]) => {
+    const dx = x - meanX;
+    const dy = y - meanY;
+    sxx += dx * dx;
+    syy += dy * dy;
+    sxy += dx * dy;
+  });
+  sxx /= coords.length - 1;
+  syy /= coords.length - 1;
+  sxy /= coords.length - 1;
+  const trace = sxx + syy;
+  const det = sxx * syy - sxy * sxy;
+  if (!Number.isFinite(trace) || !Number.isFinite(det) || det < 0) return null;
+  const term = Math.sqrt(Math.max(0, (sxx - syy) * (sxx - syy) + 4 * sxy * sxy));
+  const lambda1 = (trace + term) / 2;
+  const lambda2 = (trace - term) / 2;
+  const scale = Math.sqrt(CHI_SQUARE_2D_95);
+  const majorMoa = Math.sqrt(Math.max(lambda1, 0)) * scale;
+  const minorMoa = Math.sqrt(Math.max(lambda2, 0)) * scale;
+  let angle = 0;
+  if (sxy !== 0) {
+    angle = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+  } else if (sxx >= syy) {
+    angle = 0;
+  } else {
+    angle = Math.PI / 2;
+  }
+  const majorMm = moaToMm(majorMoa, mmPerMoa);
+  const minorMm = moaToMm(minorMoa, mmPerMoa);
+  const area = Math.PI * majorMm * minorMm;
+  return {
+    major_moa: majorMoa,
+    minor_moa: minorMoa,
+    angle_deg: angle * (180 / Math.PI),
+    area_mm2: Number.isFinite(area) ? area : 0
+  };
+}
 
 /** Convert MOA to millimetres. */
 export function moaToMm(moa: number, mmPerMoa = MM_PER_MOA_10M): number {
@@ -205,6 +312,23 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
   const length_1s = segmentLengthMm(rel_pitch, rel_yaw, pre_shot_1s_index, shot_index);
   const delta_pull = distanceBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
   const percent_10 = percentWithinMoa(rel_pitch, rel_yaw, start_index, shot_index, 1.98);
+  const holdSamples = Math.max(pull_index_calc - start_index, 0);
+  const hold_duration_s = holdSamples > 0 ? holdSamples / sr : 0;
+  const trigger_hold_s = parseSeconds((shot as any).trigger_hold);
+  const trigger_pull_s = parseSeconds((shot as any).trigger_pull);
+  const split_s = parseSeconds((shot as any).split);
+  const score_numeric = parseScore((shot as any).score);
+  const impact_pitch_moa = rel_pitch[shot_index] ?? 0;
+  const impact_yaw_moa = rel_yaw[shot_index] ?? 0;
+  const impact_pitch_mm = moaToMm(impact_pitch_moa);
+  const impact_yaw_mm = moaToMm(impact_yaw_moa);
+  const hold_ellipse = computeHoldEllipse(rel_pitch, rel_yaw, start_index, shot_index);
+  const ellipse_major_moa = hold_ellipse ? hold_ellipse.major_moa : null;
+  const ellipse_minor_moa = hold_ellipse ? hold_ellipse.minor_moa : null;
+  const ellipse_major_mm = hold_ellipse ? moaToMm(hold_ellipse.major_moa) : null;
+  const ellipse_minor_mm = hold_ellipse ? moaToMm(hold_ellipse.minor_moa) : null;
+  const ellipse_angle_deg = hold_ellipse ? hold_ellipse.angle_deg : null;
+  const ellipse_area_mm2 = hold_ellipse ? hold_ellipse.area_mm2 : null;
   return {
     ...shot,
     center,
@@ -215,7 +339,23 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
     pull_index_calc,
     length_1s,
     delta_pull,
-    percent_10
+    percent_10,
+    hold_duration_s,
+    trigger_hold_s,
+    trigger_pull_s,
+    split_s,
+    score_numeric,
+    impact_pitch_moa,
+    impact_yaw_moa,
+    impact_pitch_mm,
+    impact_yaw_mm,
+    hold_ellipse,
+    ellipse_major_moa,
+    ellipse_minor_moa,
+    ellipse_major_mm,
+    ellipse_minor_mm,
+    ellipse_angle_deg,
+    ellipse_area_mm2
   } as PreprocessedShot;
 }
 

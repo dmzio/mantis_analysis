@@ -90,6 +90,14 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
             allVals.push(Math.abs(shot.pitch[i]));
             allVals.push(Math.abs(shot.yaw[i]));
           }
+          if (shot.holdEllipse?.major) {
+            allVals.push(Math.abs(shot.holdEllipse.major));
+          }
+          if (shot.holdEllipse?.minor) {
+            allVals.push(Math.abs(shot.holdEllipse.minor));
+          }
+          if (typeof shot.impactPitch === 'number') allVals.push(Math.abs(shot.impactPitch));
+          if (typeof shot.impactYaw === 'number') allVals.push(Math.abs(shot.impactYaw));
         });
         const maxVal = Math.max(d3.max(allVals) ?? 0, ringVals[ringVals.length - 1]);
         const scale = makeScale([], size, maxVal);
@@ -117,6 +125,17 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
           const pullIdx = shot.pull_index ?? 0;
           const shotIdx = shot.shot_index ?? coords.length - 1;
           const scaled = coords.map(([x, y]) => [scale(x) + size / 2, scale(y) + size / 2]);
+          if (shot.holdEllipse?.major && shot.holdEllipse?.minor) {
+            root.append('ellipse')
+              .attr('cx', size / 2)
+              .attr('cy', size / 2)
+              .attr('rx', Math.abs(scale(shot.holdEllipse.major)))
+              .attr('ry', Math.abs(scale(shot.holdEllipse.minor)))
+              .attr('fill', 'rgba(130,201,30,0.08)')
+              .attr('stroke', 'var(--trace-trigger)')
+              .attr('stroke-width', 2)
+              .attr('transform', `rotate(${shot.holdEllipse.angle}, ${size / 2}, ${size / 2})`);
+          }
           const segs = splitSegments(scaled, { pull_index: pullIdx, shot_index: shotIdx });
           const line = d3.line().curve(d3.curveLinear);
 

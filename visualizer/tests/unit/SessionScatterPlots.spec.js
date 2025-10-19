@@ -20,9 +20,10 @@ describe('SessionScatterPlots', () => {
       global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
     });
     const charts = wrapper.vm.charts;
-    expect(charts.length).toBe(3);
+    expect(charts.length).toBe(5);
     expect(charts[0].data.datasets[0].data[0]).toBe(50);
     expect(charts[2].label).toContain('Δpull');
+    expect(charts[3].label).toBe('Score');
   });
 
   it('sorts sessions chronologically', () => {

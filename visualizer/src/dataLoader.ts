@@ -3,6 +3,18 @@ import { getHandle } from './fsHandles';
 import { preprocessShot } from './shotProcessor';
 import { aggregateFields } from './sessionAggregates';
 
+const SUMMARY_FIELDS = [
+  'length_1s',
+  'delta_pull',
+  'percent_10',
+  'hold_duration_s',
+  'split_s',
+  'score_numeric',
+  'ellipse_area_mm2',
+  'ellipse_major_mm',
+  'ellipse_minor_mm'
+];
+
 export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurrency = 10): Promise<void> {
   store.loading = true;
   try {
@@ -34,7 +46,7 @@ export async function loadFromHandle(handle: FileSystemDirectoryHandle, concurre
               const shots = session.shots.map((s: any) => preprocessShot(s));
               processed[id] = { shots };
               store.aggregates[id] = {
-                stats: aggregateFields(shots, ['length_1s', 'delta_pull', 'percent_10'])
+                stats: aggregateFields(shots, SUMMARY_FIELDS)
               };
             }
           }
