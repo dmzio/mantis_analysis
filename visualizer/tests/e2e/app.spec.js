@@ -92,7 +92,11 @@ test('averages view renders plots', async ({ page }) => {
   await page.locator('input[type="file"]').setInputFiles([sample]);
   await page.locator('[data-testid="session-table"] tbody tr button').first().click();
   await page.locator('text=Averages').click();
-  await expect(page.locator('.shot-layout canvas')).toHaveCount(3);
+  const layout = page.locator('.shot-layout');
+  await expect(layout.locator('text=Shot timeline')).toBeVisible();
+  await expect(layout.locator('text=Score progression')).toBeVisible();
+  await expect(layout.locator('text=Shot cadence')).toBeVisible();
+  await expect(layout.locator('canvas')).toHaveCount(6);
 });
 
 test('shot list formats numbers', async ({ page }) => {
