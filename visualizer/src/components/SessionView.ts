@@ -41,7 +41,7 @@ export default defineComponent({
     <div class="session-view">
       <TabView>
         <TabPanel header="Session Stats">
-          <SessionStats :shots="shots" :photo="photo" />
+          <SessionStats :shots="shots" :photo="photo" :processed-shots="processedShots" />
         </TabPanel>
         <TabPanel header="Averages">
           <SessionAggregates :shots="processedShots" :sessionPk="sessionPk" />

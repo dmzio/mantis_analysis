@@ -22,6 +22,23 @@ describe('SessionShotList', () => {
     expect(wrapper.find('table').exists()).toBe(true);
   });
 
+  it('formats timing columns', () => {
+    const wrapper = mount(SessionShotList, {
+      props: { shots: [], sessionPk: 1 },
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          DataTable: { template: '<table><slot /></table>' },
+          Column: { template: '<td></td>' },
+          Button: { template: '<button></button>' },
+          EyeIcon: { template: '<span></span>' }
+        }
+      }
+    });
+    expect(wrapper.vm.fmtSeconds(0.123)).toBe('0.12');
+    expect(wrapper.vm.fmtSeconds(null)).toBe('');
+  });
+
   it('navigates to shot details', () => {
     const shots = [{ pk: 2, score: '90', problem: 'OK' }];
     const push = vi.fn();

@@ -1,13 +1,15 @@
 import { defineComponent } from 'vue';
 import Image from 'primevue/image';
 import TraceVisualizer from './RawTraceVisualizer';
+import SessionShotGroup from './SessionShotGroup';
 
 export default defineComponent({
   name: 'SessionStats',
-  components: { TraceVisualizer, Image },
+  components: { TraceVisualizer, Image, SessionShotGroup },
   props: {
     shots: { type: Array, required: true },
-    photo: { type: String, default: '' }
+    photo: { type: String, default: '' },
+    processedShots: { type: Array, default: () => [] }
   },
   template: `
     <div class="card session-stats">
@@ -21,6 +23,7 @@ export default defineComponent({
         image-class="session-photo"
       />
       <TraceVisualizer :shots="shots" title="Raw trace" />
+      <SessionShotGroup :shots="processedShots" />
     </div>
   `
 });

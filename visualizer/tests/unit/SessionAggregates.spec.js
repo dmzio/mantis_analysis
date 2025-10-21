@@ -15,15 +15,27 @@ beforeEach(() => {
 describe('SessionAggregates', () => {
   it('aggregates data and stores stats', () => {
     const shots = [
-      { rel_pitch_moa:[0,0], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0, sample_rate:1, length_1s:1, delta_pull:2, percent_10:0.5 },
-      { rel_pitch_moa:[0,1], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0, sample_rate:1, length_1s:2, delta_pull:3, percent_10:0.7 }
+      {
+        rel_pitch_moa:[0,0], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0,
+        sample_rate:1, length_1s:1, delta_pull:2, percent_10:0.5,
+        hold_duration_s: 0.2,
+        trigger_hold_s: 0.15, trigger_pull_s: 0.12, split_s: 1, score_numeric: 95,
+        ellipse_major_mm: 5, ellipse_minor_mm: 3, ellipse_area_mm2: 40
+      },
+      {
+        rel_pitch_moa:[0,1], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0,
+        sample_rate:1, length_1s:2, delta_pull:3, percent_10:0.7,
+        hold_duration_s: 0.25,
+        trigger_hold_s: 0.18, trigger_pull_s: 0.14, split_s: 1.1, score_numeric: 94,
+        ellipse_major_mm: 6, ellipse_minor_mm: 4, ellipse_area_mm2: 50
+      }
     ];
     mount(SessionAggregates, {
       props: { shots, sessionPk: 1 },
       global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
     });
     expect(store.aggregates[1]).toBeTruthy();
-    expect(store.aggregates[1].stats.length_1s.mean).toBeGreaterThan(0);
+    expect(store.aggregates[1].stats.hold_duration_s.mean).toBeGreaterThan(0);
   });
 
   it('averages across step when downsampling', () => {

@@ -43,5 +43,12 @@ The processor derives further data used throughout the visualizer:
 - **delta_pull** – distance between the pull index and the shot point in millimetres.
 - **percent_10** – fraction of the trimmed trace that stays within the 10&nbsp;ring (1.98&nbsp;MOA). Displayed as a percentage.
 - **speed_pitch_mm_s / speed_yaw_mm_s** – vertical and horizontal speeds on the target in mm/s.
+- **hold_duration_s** – inertial estimate of the settling period between the detected start index and the calculated pull index.
+- **split_s** – time between consecutive shots based on device metadata, normalised to seconds.
+- **score_numeric** – numeric representation of the reported score, enabling cross-session averages.
+- **impact_pitch_mm / impact_yaw_mm** – final aim coordinates at the shot instant relative to the hold centre, converted to millimetres.
+- **ellipse_major_mm / ellipse_minor_mm / ellipse_area_mm2** – 95&nbsp;% confidence ellipse around the hold samples from start to shot, exposing stability footprints comparable to SCATT hold areas.
 
 The default conversion of MOA to millimetres assumes the ISSF 10&nbsp;m pistol target where one MOA equals approximately 2.9&nbsp;mm.
+
+Device metadata such as `trigger_hold` and `trigger_pull` is preserved on the processed shots for rendering the coloured trigger phases in charts, but it is not aggregated into summary statistics because the firmware currently reports the same values for every shot.
