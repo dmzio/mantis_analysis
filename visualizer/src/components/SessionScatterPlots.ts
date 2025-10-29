@@ -66,7 +66,11 @@ export default defineComponent({
   },
   template: `
     <div class="session-scatter-plots">
-      <div v-for="chart in charts" :key="chart.label" class="card">
+      <div
+        v-for="chart in charts"
+        :key="chart.label"
+        class="card session-scatter-plots__chart"
+      >
         <h4>{{ chart.label }}</h4>
         <Chart type="line" :data="chart.data" :options="options(chart.yLabel)" />
       </div>
