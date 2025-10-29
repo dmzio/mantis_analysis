@@ -10,11 +10,13 @@ Code allows:
 ## Setup
 
 Run `make setup` from the project root to install Python and Node dependencies.
-If you encounter deprecation warnings during setup or while running development
-and test scripts, resolve them as soon as possible. Keeping dependencies free
-from deprecated options ensures smoother upgrades. Always check that proposed
-changes, such as adjusting environment variables, actually provide a benefit
-before committing them.
+The Visualizer’s `npm install` (invoked with `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`)
+pulls the Chromium engine from the official `@playwright/browser-chromium`
+package so no extra browser provisioning step is required, even when the
+Playwright CDN is blocked. Unit tests and the dev server continue to run
+without the browser bundle, while end-to-end tests use the packaged Chromium
+build automatically. If you run `npm install` manually, prefix the command with
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` to keep the setup consistent.
 
 ## Architecture
 

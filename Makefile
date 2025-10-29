@@ -7,10 +7,9 @@ setup-python:
 
 setup-vis:
 	cd visualizer \
-	&& npm install --no-fund --no-audit \
-	&& npx playwright install --with-deps
+	&& PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --no-fund --no-audit
 
 vis-run:
 	cd visualizer \
-	&& npm install --no-fund --no-audit \
-	&& npm run dev
+        && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --no-fund --no-audit \
+        && npm run dev
