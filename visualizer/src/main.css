@@ -136,7 +136,7 @@ body {
 
 .dashboard-page {
   display: grid;
-  grid-template-columns: minmax(320px, 380px) 1fr;
+  grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
   gap: 1rem;
   padding: 1rem;
   background: var(--surface-ground);
@@ -183,10 +183,20 @@ body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  font-size: 0.85rem;
 }
 
 .session-listing .p-datatable-wrapper {
   flex: 1 1 auto;
+}
+
+.session-listing .p-datatable-thead > tr > th,
+.session-listing .p-datatable-tbody > tr > td {
+  padding: 0.5rem 0.75rem;
+}
+
+.session-listing .p-datatable-thead > tr > th {
+  font-weight: 600;
 }
 
 .session-listing__cell {
@@ -548,21 +558,32 @@ header {
 }
 
 .session-scatter-plots {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
+  align-content: start;
 }
 
 .session-scatter-plots .card {
-  flex: 0 0 50%;
-  height: 30vh;
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+  min-height: 220px;
+}
+
+.session-scatter-plots__chart {
+  padding: 1rem;
+}
+
+.session-scatter-plots__chart h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .session-scatter-plots .p-chart {
   flex: 1 1 auto;
-  height: 100%;
+  min-height: 0;
 }
 
 .shot-layout {
