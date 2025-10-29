@@ -177,6 +177,14 @@ body {
   color: var(--text-color);
 }
 
+.landing-subhead {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-color) 70%, transparent);
+}
+
 .landing-lead {
   font-size: 1.1rem;
   line-height: 1.6;

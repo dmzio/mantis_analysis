@@ -14,9 +14,8 @@ export default defineComponent({
         <div class="landing-card">
           <div class="landing-card__copy">
             <h1>Mantis Session Explorer</h1>
-            <p class="landing-lead">
-              Import recorded training sessions, visualise every shot trace and review performance trends in a focused workspace.
-            </p>
+            <p class="landing-subhead">pick folder with session dumps to begin</p>
+            <p class="landing-lead">Import recorded training sessions, visualise every shot trace and review performance trends in a focused workspace.</p>
             <ul class="landing-highlights">
               <li>Interactive dashboards tailored for dry-fire diagnostics.</li>
               <li>Automatic shot processing with stability, speed and accuracy insights.</li>
