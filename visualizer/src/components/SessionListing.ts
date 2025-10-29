@@ -32,19 +32,19 @@ export default defineComponent({
         scrollHeight="flex"
         stripedRows
         size="small"
-        :tableStyle="{ tableLayout: 'fixed', width: '100%' }"
+        :tableStyle="{ tableLayout: 'auto', width: '100%' }"
       >
         <Column
           field="fmtDate"
           header="Date"
-          :style="{ width: '6rem' }"
+          :style="{ width: '7.5rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell'"
         />
         <Column
           field="drill_label"
           header="Drill"
-          :style="{ width: '11rem' }"
+          :style="{ width: '14rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'truncate-cell'"
         >
@@ -57,7 +57,7 @@ export default defineComponent({
         <Column
           field="firearm_label"
           header="Firearm"
-          :style="{ width: '10rem' }"
+          :style="{ width: '13rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'truncate-cell'"
         >
@@ -70,7 +70,7 @@ export default defineComponent({
         <Column
           field="duration_label"
           header="Duration"
-          :style="{ width: '5rem' }"
+          :style="{ width: '6.5rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell'"
         >
@@ -81,7 +81,7 @@ export default defineComponent({
         <Column
           field="shot_count"
           header="Shots"
-          :style="{ width: '4.5rem' }"
+          :style="{ width: '5.5rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell align-right'"
         >
@@ -92,7 +92,7 @@ export default defineComponent({
         <Column
           field="avg_score"
           header="Avg Score"
-          :style="{ width: '5.5rem' }"
+          :style="{ width: '6.5rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell align-right'"
         >

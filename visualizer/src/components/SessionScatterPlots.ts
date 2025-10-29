@@ -16,6 +16,10 @@ export default defineComponent({
     sessions: { type: Array, required: true }
   },
   setup(props) {
+    const styles = typeof window !== 'undefined' ? getComputedStyle(document.body) : null;
+    const textColor = styles?.getPropertyValue('--text-color').trim() || '#e9ecef';
+    const gridColor = styles?.getPropertyValue('--surface-800').trim() || 'rgba(73, 80, 87, 0.35)';
+
     function buildData(field: string, transform?: (v: number) => number) {
       // sort sessions chronologically so x-axis shows oldest to newest
       const sorted = props.sessions.slice().sort((a: any, b: any) => {
@@ -58,8 +62,43 @@ export default defineComponent({
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { type: 'category', title: { display: true, text: 'Date' } },
-        y: { title: { display: true, text: y } }
+        x: {
+          type: 'category',
+          ticks: {
+            color: textColor
+          },
+          title: {
+            display: true,
+            text: 'Date',
+            color: textColor
+          },
+          grid: {
+            color: gridColor
+          }
+        },
+        y: {
+          ticks: {
+            color: textColor
+          },
+          title: {
+            display: true,
+            text: y,
+            color: textColor
+          },
+          grid: {
+            color: gridColor
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: textColor
+          }
+        },
+        tooltip: {
+          displayColors: false
+        }
       }
     });
     return { charts, options };
