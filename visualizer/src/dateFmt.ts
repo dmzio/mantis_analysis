@@ -7,3 +7,12 @@ export function formatDate(value: string | Date): string {
   const min = String(d.getUTCMinutes()).padStart(2, '0');
   return `${yyyy} ${month} ${day} ${hour}:${min}`;
 }
+
+export function formatDateShort(value: string | Date): string {
+  const d = typeof value === 'string' ? new Date(value) : value;
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC'
+  });
+}

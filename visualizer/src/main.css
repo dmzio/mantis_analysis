@@ -136,10 +136,10 @@ body {
 
 .dashboard-page {
   display: grid;
-  grid-template-columns: clamp(420px, 32vw, 560px) minmax(0, 1fr);
+  grid-template-columns: clamp(480px, 36vw, 640px) minmax(0, 1fr);
   grid-auto-rows: minmax(0, 1fr);
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem 1.5rem;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
   background: var(--surface-ground);
   height: 100%;
   box-sizing: border-box;
@@ -155,7 +155,7 @@ body {
 }
 
 .dashboard-panel-header {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--surface-700);
 }
 
@@ -170,14 +170,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
-}
-
-.dashboard-page__charts .session-scatter-plots {
-  flex: 1 1 auto;
-  min-width: 0;
   overflow: auto;
-  padding-right: 0.5rem;
 }
 
 .session-listing {
@@ -196,11 +189,38 @@ body {
 
 .session-listing .p-datatable-wrapper {
   flex: 1 1 auto;
+  overflow-x: hidden;
 }
 
 .session-listing .p-datatable-thead > tr > th,
 .session-listing .p-datatable-tbody > tr > td {
   padding: 0.5rem 0.75rem;
+}
+
+.session-scatter-plots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.2rem;
+  padding: 0;
+  min-height: 0;
+}
+
+.session-scatter-plots__chart {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.625rem;
+  gap: 0.5rem;
+}
+
+.session-scatter-plots__chart h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.session-scatter-plots__chart .p-chart {
+  flex: 1 1 auto;
+  min-height: 220px;
 }
 
 .session-listing .p-datatable-thead > tr > th {
@@ -235,7 +255,11 @@ body {
 
 @media (max-width: 1200px) {
   .dashboard-page {
-    grid-template-columns: minmax(320px, 38vw) minmax(0, 1fr);
+    grid-template-columns: minmax(360px, 42vw) minmax(0, 1fr);
+  }
+
+  .session-scatter-plots {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
 }
 
@@ -252,8 +276,11 @@ body {
   }
 
   .dashboard-page__charts .session-scatter-plots {
-    padding-right: 0;
-    gap: 1.25rem;
+    gap: 0.75rem;
+  }
+
+  .session-scatter-plots {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

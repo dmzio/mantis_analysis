@@ -2,7 +2,7 @@ import { defineComponent, computed } from 'vue';
 import Chart from 'primevue/chart';
 import store from '../store';
 import { aggregateFields } from '../sessionAggregates';
-import { formatDate } from '../dateFmt';
+import { formatDate, formatDateShort } from '../dateFmt';
 
 /**
  * Render scatter plots for basic session metrics including
@@ -28,9 +28,13 @@ export default defineComponent({
         return da - db;
       });
       const labels: string[] = [];
+      const fullLabels: string[] = [];
       const values: (number | null)[] = [];
       sorted.forEach((s: any) => {
-        labels.push(s.fmtDate || (s.date ? formatDate(s.date) : ''));
+        const longLabel = s.fmtDate || (s.date ? formatDate(s.date) : '');
+        const shortLabel = s.date ? formatDateShort(s.date) : longLabel;
+        labels.push(shortLabel);
+        fullLabels.push(longLabel);
         const processed = store.processed[s.pk]?.shots || [];
         const stats = aggregateFields(processed, [field])[field];
         let val: number | null = stats ? stats.mean : null;
@@ -38,27 +42,46 @@ export default defineComponent({
         values.push(val);
       });
       return {
-        labels,
-        datasets: [
-          {
-            label: field,
-            data: values,
-            showLine: false,
-            borderColor: '#37b24d',
-            backgroundColor: '#37b24d',
-            pointRadius: 3
-          }
-        ]
+        chartData: {
+          labels,
+          datasets: [
+            {
+              label: field,
+              data: values,
+              showLine: false,
+              borderColor: '#37b24d',
+              backgroundColor: '#37b24d',
+              pointRadius: 3
+            }
+          ]
+        },
+        fullLabels
       };
     }
-    const charts = computed(() => [
-      { label: '% in 10', data: buildData('percent_10', v => v * 100), yLabel: '%' },
-      { label: 'L₁s (mm)', data: buildData('length_1s'), yLabel: 'mm' },
-      { label: 'Δpull (mm)', data: buildData('delta_pull'), yLabel: 'mm' },
-      { label: 'Score', data: buildData('score_numeric'), yLabel: 'Score' },
-      { label: 'Split (s)', data: buildData('split_s'), yLabel: 'Seconds' }
-    ]);
-    const options = (y: string) => ({
+    const charts = computed(() => {
+      const configs: Array<{
+        label: string;
+        field: string;
+        yLabel: string;
+        transform?: (v: number) => number;
+      }> = [
+        { label: '% in 10', field: 'percent_10', transform: (v: number) => v * 100, yLabel: '%' },
+        { label: 'L₁s (mm)', field: 'length_1s', yLabel: 'mm' },
+        { label: 'Δpull (mm)', field: 'delta_pull', yLabel: 'mm' },
+        { label: 'Score', field: 'score_numeric', yLabel: 'Score' },
+        { label: 'Split (s)', field: 'split_s', yLabel: 'Seconds' }
+      ];
+      return configs.map(cfg => {
+        const { chartData, fullLabels } = buildData(cfg.field, cfg.transform);
+        return {
+          label: cfg.label,
+          data: chartData,
+          yLabel: cfg.yLabel,
+          fullLabels
+        };
+      });
+    });
+    const options = (y: string, fullLabels: string[]) => ({
       responsive: true,
       maintainAspectRatio: false,
       scales: {
@@ -92,12 +115,17 @@ export default defineComponent({
       },
       plugins: {
         legend: {
-          labels: {
-            color: textColor
-          }
+          display: false
         },
         tooltip: {
-          displayColors: false
+          displayColors: false,
+          callbacks: {
+            title: (items: any[]) => {
+              if (!items || !items.length) return '';
+              const idx = items[0].dataIndex;
+              return fullLabels[idx] || items[0].label;
+            }
+          }
         }
       }
     });
@@ -111,7 +139,7 @@ export default defineComponent({
         class="card session-scatter-plots__chart"
       >
         <h4>{{ chart.label }}</h4>
-        <Chart type="line" :data="chart.data" :options="options(chart.yLabel)" />
+        <Chart type="line" :data="chart.data" :options="options(chart.yLabel, chart.fullLabels)" />
       </div>
     </div>
   `

@@ -32,19 +32,19 @@ export default defineComponent({
         scrollHeight="flex"
         stripedRows
         size="small"
-        :tableStyle="{ tableLayout: 'auto', width: '100%' }"
+        :tableStyle="{ tableLayout: 'fixed', width: '100%' }"
       >
         <Column
           field="fmtDate"
           header="Date"
-          :style="{ width: '7.5rem' }"
+          :style="{ width: '6.25rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell'"
         />
         <Column
           field="drill_label"
           header="Drill"
-          :style="{ width: '14rem' }"
+          :style="{ minWidth: '12rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'truncate-cell'"
         >
@@ -55,22 +55,9 @@ export default defineComponent({
           </template>
         </Column>
         <Column
-          field="firearm_label"
-          header="Firearm"
-          :style="{ width: '13rem' }"
-          :headerClass="'no-wrap-cell'"
-          :bodyClass="'truncate-cell'"
-        >
-          <template #body="slotProps">
-            <span class="session-listing__cell" :title="slotProps.data.firearm_label || '—'">
-              {{ slotProps.data.firearm_label || '—' }}
-            </span>
-          </template>
-        </Column>
-        <Column
           field="duration_label"
           header="Duration"
-          :style="{ width: '6.5rem' }"
+          :style="{ width: '5.75rem' }"
           :headerClass="'no-wrap-cell'"
           :bodyClass="'no-wrap-cell'"
         >
