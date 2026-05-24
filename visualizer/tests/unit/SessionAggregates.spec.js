@@ -1,0 +1,76 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import PrimeVue from 'primevue/config';
+import SessionAggregates from '../../src/components/SessionAggregates';
+import store from '../../src/store';
+import { aggregateSeries, bucketMetricByElapsedTime, buildScatterPoints } from '../../src/sessionAggregates';
+
+beforeEach(() => {
+  if (typeof window !== 'undefined') {
+    window.SVGElement.prototype.getTotalLength = () => 100;
+  }
+  store.aggregates = {};
+});
+
+describe('SessionAggregates', () => {
+  it('aggregates data and stores stats', () => {
+    const shots = [
+      {
+        rel_pitch_moa:[0,0], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0,
+        sample_rate:1, length_1s:1, delta_pull:2, percent_10:0.5,
+        hold_duration_s: 0.2,
+        session_elapsed_s: 0,
+        trigger_hold_s: 0.15, trigger_pull_s: 0.12, split_s: 1, score_numeric: 95,
+        post_shot_stability_500ms_mm: 3,
+        ellipse_major_mm: 5, ellipse_minor_mm: 3, ellipse_area_mm2: 40
+      },
+      {
+        rel_pitch_moa:[0,1], rel_yaw_moa:[0,1], shot_index:1, start_index:0, pull_index_calc:0,
+        sample_rate:1, length_1s:2, delta_pull:3, percent_10:0.7,
+        hold_duration_s: 0.25,
+        session_elapsed_s: 301,
+        trigger_hold_s: 0.18, trigger_pull_s: 0.14, split_s: 1.1, score_numeric: 94,
+        post_shot_stability_500ms_mm: 4,
+        ellipse_major_mm: 6, ellipse_minor_mm: 4, ellipse_area_mm2: 50
+      }
+    ];
+    const wrapper = mount(SessionAggregates, {
+      props: { shots, sessionPk: 1 },
+      global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
+    });
+    expect(store.aggregates[1]).toBeTruthy();
+    expect(store.aggregates[1].stats.hold_duration_s.mean).toBeGreaterThan(0);
+    expect(store.aggregates[1].stats.post_shot_stability_500ms_mm.mean).toBeCloseTo(3.5);
+    expect(wrapper.text()).toContain('Aiming stability vs aiming time');
+    expect(wrapper.text()).toContain('Post-shot stability vs aiming time');
+  });
+
+  it('averages across step when downsampling', () => {
+    const shots = [
+      { rel_pitch_moa:[0,2,4,6], rel_yaw_moa:[0,0,0,0], shot_index: 2, start_index: 0, sample_rate: 1 },
+      { rel_pitch_moa:[1,3,5,7], rel_yaw_moa:[0,0,0,0], shot_index: 2, start_index: 0, sample_rate: 1 }
+    ];
+    const series = aggregateSeries(shots, 'abs_deviation_moa', 2);
+    expect(series.length).toBe(2);
+    expect(series[0].mean).toBeCloseTo(1.5);
+    expect(series[0].sd).toBeCloseTo(0.5);
+  });
+
+  it('builds per-shot scatter data and elapsed-time buckets', () => {
+    const shots = [
+      { pk: 11, score_numeric: 94.2, hold_duration_s: 1.2, length_1s: 16, session_elapsed_s: 0 },
+      { pk: 12, score_numeric: 95.1, hold_duration_s: 1.4, length_1s: 14, session_elapsed_s: 120 },
+      { pk: 13, score_numeric: 96.3, hold_duration_s: 1.1, length_1s: 10, session_elapsed_s: 360 }
+    ];
+    const scatter = buildScatterPoints(shots, 'hold_duration_s', 'length_1s');
+    expect(scatter).toHaveLength(3);
+    expect(scatter[0].shotIndex).toBe(1);
+    expect(scatter[1].score).toBeCloseTo(95.1);
+
+    const buckets = bucketMetricByElapsedTime(shots, 'length_1s', 300);
+    expect(buckets).toHaveLength(2);
+    expect(buckets[0].label).toBe('0-5 min');
+    expect(buckets[0].median).toBe(15);
+    expect(buckets[1].count).toBe(1);
+  });
+});

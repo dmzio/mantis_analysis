@@ -1,0 +1,30 @@
+name: Python CI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python.yml'
+      - 'samples/**'
+  pull_request:
+    paths:
+      - 'python/**'
+      - '.github/workflows/python.yml'
+      - 'samples/**'
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    concurrency:
+      # Share the concurrency group across push and pull_request events
+      group: python-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -e ./python
+      - run: ruff format --check python
+      - run: ruff check python
+      - run: pytest -q

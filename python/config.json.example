@@ -1,0 +1,8 @@
+{
+  "user_pk": 123456,
+  "user_secret_key": "replace-with-mantisx-user-secret-key",
+  "username": "example-user",
+  "password": "example-password",
+  "start_date": "1970-01-01T00:00:00.000Z",
+  "end_date": null
+}

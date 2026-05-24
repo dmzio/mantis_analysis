@@ -1,0 +1,65 @@
+# Shot Processing Basics
+
+This project preprocesses each shot immediately after loading the JSON files. The processing logic mirrors the original MantisX web implementation and is implemented in `visualizer/src/shotProcessor.ts`.
+
+## Hold centre calculation
+
+The hold centre is averaged from the yaw and pitch samples captured between 20 % and 10 % prior to the `shot_index`.  These averages are used as the reference when converting all pitch and yaw values to relative deviations expressed in minutes of angle (MOA).
+
+## Angle conversions
+
+MOA values are derived from degrees. Conversion helpers are provided:
+
+```ts
+const moa = degToMoa(0.5);      // degrees → MOA
+const deg = moaToDeg(moa);       // MOA → degrees
+```
+
+## Trace trimming
+
+The `findStartIndex` helper scans backwards from `shot_index` and returns the last sample that lies more than **41.25 MOA** (the 12 cm pistol radius) away from the hold centre.  This effectively trims the trace to the point where the shooter first settles on target and matches the default aiming window in the UI.
+
+Processed results are stored separately from the raw JSON.  Each session record
+in the Vue store retains its original `shots` array and an accompanying
+`processed` object containing the derived `shots` array.
+
+## Reference dimensions
+
+The following table lists the current ISSF 10 m pistol target dimensions.  These values may be adjusted if another discipline is analysed.
+
+| Item | Diameter (mm) | Radius (mm) | Angle (°) |         Angle (MOA, from center) |
+|-----------------|---------------:|------------:|----------:|---------------------------------:|
+| 10-ring | 11.50 | 5.75 | 0.03295 |                             1.98 |
+| Black field | 59.50 | 29.75 | 0.17045 |                            10.23 |
+| 12 cm radius (offset of aiming start) | 240.00 | 120.00 | 0.68750 |                            41.25 |
+
+
+## Additional metrics
+
+The processor derives further data used throughout the visualizer:
+
+- **pull_index_calc** – index located 0.25&nbsp;s before the shot.
+- **length_1s** – path length covered during the last second before the shot in millimetres.
+- **delta_pull** – endpoint displacement between the calculated pull index and the shot point in millimetres. In the session analytics this is presented as the pre-shot displacement over the last 250&nbsp;ms.
+- **percent_10** – fraction of the trimmed trace that stays within the 10&nbsp;ring (1.98&nbsp;MOA). Displayed as a percentage.
+- **speed_pitch_mm_s / speed_yaw_mm_s** – vertical and horizontal speeds on the target in mm/s.
+- **hold_duration_s** – inertial estimate of the settling period between the detected start index and the calculated pull index.
+- **split_s** – time between consecutive shots based on device metadata, normalised to seconds.
+- **score_numeric** – numeric representation of the reported score, enabling cross-session averages.
+- **impact_pitch_mm / impact_yaw_mm** – final aim coordinates at the shot instant relative to the hold centre, converted to millimetres.
+- **post_shot_stability_500ms_mm** – radialised standard deviation of target-space position during the first 0.5&nbsp;s after the shot. It is calculated as `sqrt(sd_x² + sd_y²)` on the post-shot samples in millimetres and is omitted when the full 0.5&nbsp;s window is unavailable.
+- **session_elapsed_s** – cumulative shot time from the start of the session, derived from the running sum of `split_s` in shot order.
+- **ellipse_major_mm / ellipse_minor_mm / ellipse_area_mm2** – 95&nbsp;% confidence ellipse around the hold samples from start to shot, exposing stability footprints comparable to SCATT hold areas.
+
+The default conversion of MOA to millimetres assumes the ISSF 10&nbsp;m pistol target where one MOA equals approximately 2.9&nbsp;mm.
+
+Device metadata such as `trigger_hold` and `trigger_pull` is preserved on the processed shots for rendering the coloured trigger phases in charts, but it is not aggregated into summary statistics because the firmware currently reports the same values for every shot.
+
+## Session analytics reports
+
+The session **Averages** view now uses the existing and derived shot metrics in four per-shot reports:
+
+- **Aiming stability vs aiming time** – plots `length_1s` against `hold_duration_s`. Lower values indicate a shorter path during the final second before the shot.
+- **Pre-shot displacement vs aiming time** – plots `delta_pull` against `hold_duration_s` to show how far the aim point moves during the last 250&nbsp;ms.
+- **Post-shot stability vs aiming time** – plots `post_shot_stability_500ms_mm` against `hold_duration_s` to compare recoil follow-through against the time spent settling.
+- **Aiming stability over session time** – buckets `length_1s` by 5-minute `session_elapsed_s` windows and renders median with interquartile spread so single wild shots do not dominate the trend.
