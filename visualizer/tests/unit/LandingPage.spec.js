@@ -7,7 +7,11 @@ import router from "../../src/router";
 describe("LandingPage", () => {
   it("renders header", () => {
     const wrapper = mount(LandingPage, { global: { provide: { store } } });
+    expect(wrapper.find("h1").text()).toBe("Deep Mantis");
+    expect(wrapper.find("h2").text()).toBe("Session explorer");
     expect(wrapper.text()).toMatch(/pick folder with session dumps/);
+    expect(wrapper.text()).toContain("Interactive dashboards tailored for air pistol trainings.");
+    expect(wrapper.find(".landing-logo").attributes("src")).toBe("/favicon.svg");
   });
 
   it("redirects to dashboard if folder and sessions loaded", () => {

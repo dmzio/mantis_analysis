@@ -12,11 +12,12 @@ export default defineComponent({
       <section class="landing-page">
         <div class="landing-card">
           <div class="landing-card__copy">
-            <h1>Mantis Session Explorer</h1>
+            <h1>Deep Mantis</h1>
+            <h2>Session explorer</h2>
             <p class="landing-subhead">pick folder with session dumps to begin</p>
             <p class="landing-lead">Import recorded training sessions, visualise every shot trace and review performance trends in a focused workspace.</p>
             <ul class="landing-highlights">
-              <li>Interactive dashboards tailored for dry-fire diagnostics.</li>
+              <li>Interactive dashboards tailored for air pistol trainings.</li>
               <li>Automatic shot processing with stability, speed and accuracy insights.</li>
               <li>Dark and light themes for comfortable analysis in any environment.</li>
             </ul>
@@ -29,18 +30,7 @@ export default defineComponent({
             </div>
           </div>
           <div class="landing-card__visual" aria-hidden="true">
-            <div class="landing-preview">
-              <div class="preview-header">
-                <span class="preview-pill"></span>
-                <div class="preview-title">Shot Metrics</div>
-              </div>
-              <div class="preview-chart">
-                <div class="preview-line"></div>
-                <div class="preview-line"></div>
-                <div class="preview-line"></div>
-                <div class="preview-ring"></div>
-              </div>
-            </div>
+            <img class="landing-logo" src="/favicon.svg" alt="" />
           </div>
         </div>
         <input ref="fallback" type="file" multiple style="display:none" @change="chooseFallback" />

@@ -558,6 +558,13 @@ body {
   color: var(--text-color);
 }
 
+.landing-card__copy h2 {
+  margin: -1rem 0 0;
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--text-color) 78%, transparent);
+}
+
 .landing-subhead {
   margin: 0;
   font-size: 0.95rem;
@@ -630,81 +637,11 @@ body {
   align-items: center;
 }
 
-.landing-preview {
-  width: min(360px, 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--primary-color) 12%, transparent) 0%, transparent 60%),
-    var(--surface-800);
-  border: 1px solid color-mix(in srgb, var(--surface-700) 80%, transparent);
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.preview-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.preview-pill {
-  width: 42px;
-  height: 12px;
-  border-radius: 999px;
-  background: var(--primary-color);
-  box-shadow: 0 0 20px rgba(76, 160, 255, 0.45);
-}
-
-.preview-title {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-  color: color-mix(in srgb, var(--text-color) 65%, transparent);
-}
-
-.preview-chart {
-  position: relative;
-  height: 160px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--surface-900) 90%, transparent);
-  overflow: hidden;
-}
-
-.preview-line {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  height: 3px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-  opacity: 0.45;
-}
-
-.preview-line:nth-child(1) {
-  top: 35%;
-}
-
-.preview-line:nth-child(2) {
-  top: 55%;
-  opacity: 0.7;
-}
-
-.preview-line:nth-child(3) {
-  top: 75%;
-}
-
-.preview-ring {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--primary-color) 45%, var(--text-color) 10%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.35;
+.landing-logo {
+  width: min(320px, 100%);
+  aspect-ratio: 1;
+  border-radius: 32px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
 }
 
 @media (max-width: 768px) {
