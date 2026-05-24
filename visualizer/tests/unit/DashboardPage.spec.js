@@ -32,7 +32,7 @@ const mountOptions = {
   global: {
     plugins: [router],
     provide: { store },
-    stubs: { Button: buttonStub }
+    stubs: { Button: buttonStub, Chart: { template: "<canvas></canvas>" } }
   }
 };
 
