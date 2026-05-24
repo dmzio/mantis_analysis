@@ -11,7 +11,7 @@ describe("LandingPage", () => {
     expect(wrapper.find("h2").text()).toBe("Session explorer");
     expect(wrapper.text()).toMatch(/pick folder with session dumps/);
     expect(wrapper.text()).toContain("Interactive dashboards tailored for air pistol trainings.");
-    expect(wrapper.find(".landing-logo").attributes("src")).toBe("/favicon.svg");
+    expect(wrapper.find(".landing-logo").attributes("src")).toMatch(/deep-mantis\.svg/);
   });
 
   it("redirects to dashboard if folder and sessions loaded", () => {

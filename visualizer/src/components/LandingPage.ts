@@ -4,6 +4,7 @@ import store from '../store';
 import router from '../router';
 import { getHandle, saveHandle } from '../fsHandles';
 import { loadFromHandle, loadFromFileList } from '../dataLoader';
+import logoUrl from '../assets/deep-mantis.svg';
 
 export default defineComponent({
   name: 'LandingPage',
@@ -30,7 +31,7 @@ export default defineComponent({
             </div>
           </div>
           <div class="landing-card__visual" aria-hidden="true">
-            <img class="landing-logo" src="/favicon.svg" alt="" />
+            <img class="landing-logo" :src="logoUrl" alt="" />
           </div>
         </div>
         <input ref="fallback" type="file" multiple style="display:none" @change="chooseFallback" />
@@ -40,6 +41,9 @@ export default defineComponent({
     this.autoLoad();
   },
   computed: {
+    logoUrl() {
+      return logoUrl;
+    },
     store() {
       return store;
     },
