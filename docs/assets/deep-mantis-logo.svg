@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Deep Mantis logo</title>
+  <desc id="desc">A dark-background Deep Mantis logo with a teal motion trace ending in a target dot and the tagline analyze every shot.</desc>
+
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="48%" r="72%">
+      <stop offset="0%" stop-color="#0B1A2E"/>
+      <stop offset="58%" stop-color="#071221"/>
+      <stop offset="100%" stop-color="#03070D"/>
+    </radialGradient>
+
+    <linearGradient id="traceGradient" x1="240" y1="560" x2="930" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="55%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+
+    <linearGradient id="mantisText" x1="560" y1="0" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#5EEAD4"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.18 0 0 0 0 0.95 0 0 0 0 0.82 0 0 0 0.45 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+
+  <g id="icon" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <path
+      d="M 255 566
+         C 360 598, 452 500, 522 402
+         C 600 292, 742 316, 751 455
+         C 758 527, 799 540, 895 540"
+      stroke="url(#traceGradient)"
+      stroke-width="22"/>
+
+    <circle cx="895" cy="540" r="52" stroke="#5EEAD4" stroke-width="7"/>
+    <circle cx="895" cy="540" r="24" fill="#5EEAD4" stroke="none"/>
+  </g>
+
+  <g id="wordmark" font-family="Lato, Segoe UI, Helvetica Neue, Arial, sans-serif">
+    <text x="600" y="778" text-anchor="middle" font-size="92" font-weight="300">
+      <tspan fill="#F8FAFC" letter-spacing="14">Deep</tspan>
+      <tspan dx="58" fill="url(#mantisText)" letter-spacing="4">Mantis</tspan>
+    </text>
+  </g>
+
+  <text
+    x="600"
+    y="874"
+    text-anchor="middle"
+    fill="#F8FAFC"
+    opacity="0.95"
+    font-family="Lato, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    font-size="34"
+    font-weight="300"
+    letter-spacing="15">analyze every shot</text>
+</svg>

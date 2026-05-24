@@ -1,6 +1,10 @@
 ![Visualizer CI](https://github.com/dmzio/mantis_analysis/actions/workflows/ci.yml/badge.svg)
 ![Python CI](https://github.com/dmzio/mantis_analysis/actions/workflows/python.yml/badge.svg)
 
+<p align="center">
+  <img src="docs/assets/deep-mantis-logo.svg" alt="Deep Mantis logo" width="420">
+</p>
+
 # Deep Mantis
 
 **Deep Mantis** transforms MantisX session exports into a local analytics workspace. The Python downloader saves session JSON exports for a configured account, and the Vue visualizer loads those exports in the browser for session trends, shot traces, drift review, and stability analysis.
