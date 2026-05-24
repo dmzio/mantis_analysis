@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import LandingPage from './components/LandingPage';
 import DashboardPage from './components/DashboardPage';
 import SessionViewer from './components/SessionViewer';
@@ -16,7 +16,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(import.meta.env.BASE_URL === './' ? '' : import.meta.env.BASE_URL),
   routes
 });
 

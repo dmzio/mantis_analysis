@@ -7,6 +7,7 @@
 - Don't forget to add to GIT all created files if they should persist in repository.
 - Before commits, run `git status --short --ignored` and confirm that credentials, session exports, photos, editor metadata, generated output, and local caches are not staged or tracked.
 - Do not commit `python/config.json`, `data/sessions` exports, `data/sessions/session_photo`, `.idea`, `.codex`, generated visualizer output, Playwright artifacts, local dependency directories, or local cache directories.
+- When the user gives a durable constraint using words such as "always", "never", "must", or "do not", generalize it into the relevant repo guidance during the same task whenever it prevents repeat mistakes.
 
 ## Dev Environment Tips
 
@@ -95,6 +96,7 @@ npm run test:coverage  # unit tests with coverage report
 ### Command approvals & timeouts
 
 - Use the Codex escalation workflow (`with_escalated_permissions`) any time a command needs Docker, network access, or other privileged resources. Don’t rely on a verbal request.
+- Prefer repo-owned `make` targets for Docker, browser, network, and other privileged workflows. Use the broadest existing target that proves the change; add or use narrower commands only when no appropriate broad target exists.
 - Prefer Playwright container versions that match the `@playwright/test` entry in `package.json` (e.g., if the project depends on `1.53.2`, run `mcr.microsoft.com/playwright:v1.53.2-jammy`).
 - Allocate generous timeouts for Docker commands (`timeout_ms` ≥ 240 000) because image pulls and browser downloads can take several minutes.
 - If Playwright reports that the Docker image version is out of sync, switch to the suggested tag before retrying rather than rerunning with the old image.

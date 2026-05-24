@@ -84,7 +84,7 @@ test("home page loads", async ({ page }) => {
 test("dashboard lists sessions", async ({ page }) => {
   await page.goto("http://localhost:8765/");
   await uploadSessions(page, ["11111027.json", "11111942.json"]);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/#\/dashboard$/);
   const rows = page.locator('[data-testid="session-table"] tbody tr');
   await expect(rows).toHaveCount(2);
   await expect(rows.nth(0)).toContainText('10');
@@ -122,7 +122,7 @@ test("dashboard lists sessions", async ({ page }) => {
 
   // reset via menubar
   await page.locator('ul[role="menubar"] >> text=Reset data').click();
-  await expect(page).toHaveURL('http://localhost:8765/');
+  await expect(page).toHaveURL('http://localhost:8765/#/');
   await expect(page.evaluate(() => localStorage.getItem('data_folder'))).resolves.toBeNull();
 });
 
@@ -130,7 +130,7 @@ test("visualizer theming and controls", async ({ page }) => {
   await page.goto("http://localhost:8765/");
   await uploadSessions(page, ["11111027.json"]);
   await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
-  await expect(page).toHaveURL(/\/session\//);
+  await expect(page).toHaveURL(/#\/session\//);
 
   const playBtn = page.locator('[data-testid="play-btn"]');
   await expect(playBtn).toBeVisible();
@@ -151,7 +151,7 @@ test("visualizer theming and controls", async ({ page }) => {
 
   // open shot details
   await page.locator('[data-testid="shot-table"] tbody tr .session-shotlist__link').first().click();
-  await expect(page).toHaveURL(/\/session\/\d+\/shot\/\d+/);
+  await expect(page).toHaveURL(/#\/session\/\d+\/shot\/\d+/);
   await expect(page.locator('[data-testid="breadcrumb"]').first()).toBeVisible();
   await expect(page.locator('[data-testid="shot-details"]').first()).toBeVisible();
 });
@@ -196,14 +196,14 @@ test('[layout] averages tab exposes all plots through vertical scrolling', async
 test('[layout] dashboard and session pages never scroll sideways', async ({ page }) => {
   await page.goto('http://localhost:8765/');
   await uploadSessions(page, ['11111027.json', '11111942.json']);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/#\/dashboard$/);
 
   await expectNoHorizontalOverflow(page, 'body', 'dashboard body');
   await expectNoHorizontalOverflow(page, '.dashboard-page', 'dashboard grid');
   await expectNoHorizontalOverflow(page, '.session-listing .p-datatable-wrapper', 'session listing');
 
   await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
-  await expect(page).toHaveURL(/\/session\/\d+/);
+  await expect(page).toHaveURL(/#\/session\/\d+/);
 
   await expectNoHorizontalOverflow(page, 'body', 'session body');
   await expectNoHorizontalOverflow(page, '.session-view', 'session tabs');
@@ -214,13 +214,13 @@ test('[layout] dashboard remains usable on mobile width', async ({ page }) => {
   await page.setViewportSize({ width: 430, height: 760 });
   await page.goto('http://localhost:8765/');
   await uploadSessions(page, ['11111027.json', '11111942.json']);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/#\/dashboard$/);
   await expectNoHorizontalOverflow(page, 'body', 'mobile dashboard body');
   await expectNoClippedWideChildren(page, '.dashboard-page', 'mobile dashboard grid');
   const firstLink = page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first();
   await expect(firstLink).toBeVisible();
   await firstLink.click();
-  await expect(page).toHaveURL(/\/session\/\d+/);
+  await expect(page).toHaveURL(/#\/session\/\d+/);
 });
 
 test('[layout] session stats keeps horizontal grid without photo', async ({ page }) => {

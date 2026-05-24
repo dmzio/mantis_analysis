@@ -64,7 +64,7 @@ describe('SessionShotList', () => {
     });
     wrapper.vm.toDetails(shots[0]);
     expect(push).toHaveBeenCalledWith('/session/3/shot/2');
-    expect(wrapper.vm.shotHref(shots[0])).toBe('/session/3/shot/2');
+    expect(wrapper.vm.shotHref(shots[0])).toBe('#/session/3/shot/2');
     router.push = originalPush;
   });
 

@@ -58,7 +58,7 @@ describe("SessionListing", () => {
     });
     wrapper.vm.toDetails(sessions[0]);
     expect(push).toHaveBeenCalledWith('/session/2');
-    expect(wrapper.vm.sessionHref(sessions[0])).toBe('/session/2');
+    expect(wrapper.vm.sessionHref(sessions[0])).toBe('#/session/2');
     router.push = originalPush;
   });
 

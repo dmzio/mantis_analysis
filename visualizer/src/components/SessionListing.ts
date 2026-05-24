@@ -30,7 +30,7 @@ export default defineComponent({
       this.router.push(`/session/${row.pk}`);
     },
     sessionHref(row: any) {
-      return row?.pk ? `/session/${row.pk}` : '#';
+      return row?.pk ? this.router.resolve(`/session/${row.pk}`).href : '#';
     },
     metricValue(row: any, metric: SessionMetricDefinition) {
       const stat = row.metrics?.[metric.key];

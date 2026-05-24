@@ -25,7 +25,7 @@ export default defineComponent({
     },
     shotHref(row: any) {
       if (!row?.pk) return '#';
-      return `/session/${this.sessionPk}/shot/${row.pk}`;
+      return this.router.resolve(`/session/${this.sessionPk}/shot/${row.pk}`).href;
     },
     fmt(val: number): string {
       if (val === null || val === undefined) return '';
