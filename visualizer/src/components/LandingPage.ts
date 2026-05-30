@@ -17,6 +17,15 @@ export default defineComponent({
             <h2>Session explorer</h2>
             <p class="landing-subhead">pick folder with session dumps to begin</p>
             <p class="landing-lead">Import recorded training sessions, visualise every shot trace and review performance trends in a focused workspace.</p>
+            <p class="landing-data-note">
+              Download MantisX session files outside this browser view, then select the export folder here.
+              <a
+                href="https://github.com/dmzio/mantis_analysis#getting-started"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="landing-repo-link"
+              >Repository setup</a>
+            </p>
             <ul class="landing-highlights">
               <li>Interactive dashboards tailored for air pistol trainings.</li>
               <li>Automatic shot processing with stability, speed and accuracy insights.</li>

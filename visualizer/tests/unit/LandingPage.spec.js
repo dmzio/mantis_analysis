@@ -11,6 +11,10 @@ describe("LandingPage", () => {
     expect(wrapper.find("h2").text()).toBe("Session explorer");
     expect(wrapper.text()).toMatch(/pick folder with session dumps/);
     expect(wrapper.text()).toContain("Interactive dashboards tailored for air pistol trainings.");
+    expect(wrapper.text()).toContain("Download MantisX session files outside this browser view, then select the export folder here.");
+    const repoLink = wrapper.get('[data-testid="landing-repo-link"]');
+    expect(repoLink.text()).toBe("Repository setup");
+    expect(repoLink.attributes("href")).toBe("https://github.com/dmzio/mantis_analysis#getting-started");
     expect(wrapper.find(".landing-logo").attributes("src")).toMatch(/deep-mantis\.svg/);
   });
 

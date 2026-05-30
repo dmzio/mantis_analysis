@@ -580,6 +580,23 @@ body {
   color: color-mix(in srgb, var(--text-color) 85%, transparent);
 }
 
+.landing-data-note {
+  margin: -0.5rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--text-color) 78%, transparent);
+}
+
+.landing-data-note a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.landing-data-note a:hover {
+  text-decoration: underline;
+}
+
 .landing-highlights {
   list-style: none;
   padding: 0;
@@ -1269,6 +1286,13 @@ header {
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+}
+
+@media (max-width: 1200px) {
+  .session-scatter-plots {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: minmax(22rem, 42vh);
+  }
 }
 
 .p-chart canvas {
