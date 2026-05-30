@@ -10,6 +10,7 @@ import { computeSessionMetrics, SESSION_METRICS } from '../sessionMetrics';
 import { getProcessedShots } from '../sessionData';
 import { formatSessionDuration } from '../durationFmt';
 import { perfNow, recordPerf } from '../perfMetrics';
+import { getActiveDriftMode } from '../appSettings';
 
 interface DateFilterPreset {
   key: string;
@@ -109,6 +110,7 @@ export default defineComponent({
     },
     sessionList() {
       const start = perfNow();
+      const mode = getActiveDriftMode();
       const sessions = Object.values(store.sessions).slice();
       try {
         sessions.sort((a: any, b: any) => {
@@ -121,14 +123,41 @@ export default defineComponent({
           const firearm = s.firearm_label || '';
           const drill = s.drill_label || '';
           const avgScore = typeof s.avg_score === 'number' ? s.avg_score : null;
-          let metricStats = store.aggregates[s.pk]?.metrics || s.metrics || {};
+          const aggregate = store.aggregates[s.pk];
+          const aggregateMetrics = aggregate?.metrics;
+          const sessionMetrics = s.metrics;
+          const hasModeMetrics =
+            !!aggregate?.metricsByMode ||
+            !!s.metricsByMode ||
+            !!aggregateMetrics?.original ||
+            !!aggregateMetrics?.corrected ||
+            !!sessionMetrics?.original ||
+            !!sessionMetrics?.corrected;
+          let metricStats =
+            aggregate?.metricsByMode?.[mode] ||
+            s.metricsByMode?.[mode] ||
+            aggregateMetrics?.[mode] ||
+            sessionMetrics?.[mode] ||
+            (!hasModeMetrics && aggregateMetrics?.percent10 ? aggregateMetrics : null) ||
+            (!hasModeMetrics && sessionMetrics?.percent10 ? sessionMetrics : null) ||
+            {};
           if ((!metricStats || !Object.keys(metricStats).length) && s.ready) {
-            const processedShots = getProcessedShots(s.pk);
+            const processedShots = getProcessedShots(s.pk, mode);
             if (processedShots.length) {
               metricStats = computeSessionMetrics(processedShots);
-              store.sessions[s.pk].metrics = metricStats;
+              store.sessions[s.pk].metrics = {
+                ...metricStats
+              };
+              store.sessions[s.pk].metricsByMode = {
+                ...(store.sessions[s.pk].metricsByMode || {}),
+                [mode]: metricStats
+              };
               store.aggregates[s.pk] = store.aggregates[s.pk] || { stats: s.statsSummary || {}, metrics: {} };
-              store.aggregates[s.pk].metrics = metricStats;
+              store.aggregates[s.pk].metrics = { ...metricStats };
+              store.aggregates[s.pk].metricsByMode = {
+                ...(store.aggregates[s.pk].metricsByMode || {}),
+                [mode]: metricStats
+              };
             }
           }
           const metrics: Record<string, { mean: number | null; sd: number | null }> = {};

@@ -10,6 +10,7 @@ import {
   bucketMetricByElapsedTime
 } from '../sessionAggregates';
 import { computeSessionMetrics } from '../sessionMetrics';
+import { getActiveDriftMode } from '../appSettings';
 
 function toBandChartData(series: SeriesPoint[], label: string) {
   const labels = series.map(point => point.x.toFixed(2));
@@ -281,7 +282,16 @@ export default defineComponent({
         'ellipse_minor_mm'
       ]);
       const metrics = computeSessionMetrics(shots);
-      store.aggregates[props.sessionPk] = { stats: summary, metrics };
+      const mode = getActiveDriftMode();
+      const currentAggregate = store.aggregates[props.sessionPk] || { stats: {}, metrics: {} };
+      const statsByMode = currentAggregate.statsByMode || {};
+      const metricsByMode = currentAggregate.metricsByMode || {};
+      store.aggregates[props.sessionPk] = {
+        stats: summary,
+        metrics,
+        statsByMode: { ...statsByMode, [mode]: summary },
+        metricsByMode: { ...metricsByMode, [mode]: metrics }
+      };
       stats.value = summary;
 
       const hold = summary.hold_duration_s?.mean ?? 0;

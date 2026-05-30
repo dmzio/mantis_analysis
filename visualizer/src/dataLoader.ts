@@ -6,6 +6,7 @@ import { cacheProcessedShots, cacheSessionDetail, clearSessionData } from './ses
 import { recordPerf, perfNow } from './perfMetrics';
 import { formatDate } from './dateFmt';
 import { persistSessionMeta, persistSessionShots, clearCachedSessions } from './db/cacheDb';
+import { getActiveDriftMode } from './appSettings';
 
 const SUMMARY_FIELDS = [
   'length_1s',
@@ -27,8 +28,8 @@ type FileSource = {
 
 interface WorkerResponse {
   sessionPk: number;
-  shots: any[];
-  stats: Record<string, { mean: number; sd: number }>;
+  shots: any;
+  stats: Record<string, any>;
   metrics: Record<string, any>;
 }
 
@@ -304,18 +305,31 @@ async function ingestSource(
     void runWorker({ ...sessionMeta, shots })
       .then(workerResult => {
         cacheProcessedShots(pk as number, workerResult.shots);
-        store.aggregates[pk as number] = { stats: workerResult.stats, metrics: workerResult.metrics };
+        const mode = getActiveDriftMode();
+        store.aggregates[pk as number] = {
+          stats: workerResult.stats?.[mode] || {},
+          metrics: workerResult.metrics?.[mode] || {},
+          statsByMode: workerResult.stats,
+          metricsByMode: workerResult.metrics
+        };
+        const processedCount =
+          workerResult.shots?.corrected?.length ??
+          workerResult.shots?.original?.length ??
+          shots.length;
         const current = store.sessions[pk as number];
         if (!current) {
           return;
         }
         store.sessions[pk as number] = {
           ...current,
-          shot_count: current.shot_count ?? workerResult.shots.length,
+          shot_count: current.shot_count ?? processedCount,
           ready: true,
           status: 'ready',
-          metrics: workerResult.metrics,
-          statsSummary: workerResult.stats
+          metrics: workerResult.metrics?.[mode] || {},
+          metricsByMode: workerResult.metrics,
+          statsSummary: workerResult.stats?.[mode] || {},
+          statsSummaryByMode: workerResult.stats,
+          drift: workerResult.shots?.drift ?? null
         };
         persistSessionMeta(pk as number, store.sessions[pk as number]);
         persistSessionShots(pk as number, workerResult.shots);

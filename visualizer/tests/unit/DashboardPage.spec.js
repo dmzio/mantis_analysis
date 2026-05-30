@@ -7,6 +7,7 @@ import SessionListing from "../../src/components/SessionListing";
 import SessionScatterPlots from "../../src/components/SessionScatterPlots";
 import * as loader from "../../src/dataLoader";
 import { cacheProcessedShots, clearSessionData } from "../../src/sessionData";
+import { appSettings, resetAppSettings } from "../../src/appSettings";
 
 const flushMounted = async (wrapper) => {
   await Promise.resolve();
@@ -45,6 +46,7 @@ describe("DashboardPage", () => {
     store.loader = { total: 0, processed: 0, pending: 0, active: false, message: '', currentPk: null, inFlight: 0 };
     store.loading = false;
     clearSessionData();
+    resetAppSettings();
     ensureSpy = vi.spyOn(loader, 'ensureData').mockResolvedValue(true);
   });
   afterEach(() => {
@@ -118,6 +120,29 @@ describe("DashboardPage", () => {
     const [session] = listing.props('sessions');
     expect(session.metrics.percent10.mean).toBeCloseTo(70);
     expect(session.metrics.hold.mean).toBeCloseTo(1.25);
+  });
+
+  it("uses metrics from the active drift mode", async () => {
+    store.sessions = {
+      1: { date: "2024-01-01", pk: 1, ready: true }
+    };
+    cacheProcessedShots(1, {
+      original: [
+        { percent_10: 0.2, hold_duration_s: 1, split_s: 1, length_1s: 50, delta_pull: 2 }
+      ],
+      corrected: [
+        { percent_10: 0.9, hold_duration_s: 2, split_s: 1, length_1s: 25, delta_pull: 1, drift_correction: {} }
+      ],
+      drift: { method: 'session_hold_linear' }
+    });
+
+    const wrapper = await mount(DashboardPage, mountOptions);
+    let [session] = wrapper.findComponent(SessionListing).props('sessions');
+    expect(session.metrics.percent10.mean).toBeCloseTo(90);
+    appSettings.driftCorrection = false;
+    await wrapper.vm.$nextTick();
+    [session] = wrapper.findComponent(SessionListing).props('sessions');
+    expect(session.metrics.percent10.mean).toBeCloseTo(20);
   });
 
   it("activates sessions via presets and feeds plots", async () => {

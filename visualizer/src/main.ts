@@ -6,10 +6,11 @@ import router from './router';
 import AppRoot from './App';
 import './main.css';
 import { hydrateStoreFromCache } from './cacheBootstrap';
+import { loadAppSettings } from './appSettings';
 
-const dark = (localStorage.getItem('darkMode') ?? 'true') === 'true';
-document.body.classList.toggle('p-dark', dark);
-document.body.setAttribute('data-theme', dark ? 'lara-dark-blue' : 'lara-light-blue');
+const settings = loadAppSettings();
+document.body.classList.toggle('p-dark', settings.dark);
+document.body.setAttribute('data-theme', settings.dark ? 'lara-dark-blue' : 'lara-light-blue');
 
 (async () => {
   await hydrateStoreFromCache();

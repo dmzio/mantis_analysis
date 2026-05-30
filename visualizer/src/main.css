@@ -1312,7 +1312,12 @@ body:not(.p-dark) .p-chart canvas {
   min-height: clamp(380px, 48vh, 640px);
 }
 
-.shot-layout .drift-toggle {
+.shot-mode-bar {
+  margin: 1rem 0;
+}
+
+.shot-layout .drift-toggle,
+.shot-mode-bar .drift-toggle {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;

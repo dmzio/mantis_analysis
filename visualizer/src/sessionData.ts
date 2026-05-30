@@ -1,8 +1,9 @@
 import { markRaw } from 'vue';
-import type { PreprocessedShot } from './shotProcessor';
+import { getActiveDriftMode, type DriftMode } from './appSettings';
+import type { PreprocessedShot, ProcessedSessionShotVariants, SessionDriftEstimate } from './shotProcessor';
 
 const sessionDetailCache = new Map<number, Record<string, any>>();
-const processedShotCache = new Map<number, PreprocessedShot[]>();
+const processedShotCache = new Map<number, ProcessedSessionShotVariants>();
 
 export function cacheSessionDetail(session: Record<string, any>): void {
   if (!session?.pk) return;
@@ -13,16 +14,47 @@ export function getSessionDetail(pk: number): Record<string, any> | null {
   return sessionDetailCache.get(pk) || null;
 }
 
-export function cacheProcessedShots(pk: number, shots: PreprocessedShot[]): void {
-  processedShotCache.set(pk, markRaw(shots));
+export function normalizeProcessedShotVariants(
+  shots: PreprocessedShot[] | Partial<ProcessedSessionShotVariants>
+): ProcessedSessionShotVariants {
+  if (Array.isArray(shots)) {
+    return {
+      original: shots,
+      corrected: shots,
+      drift: null
+    };
+  }
+  const original = Array.isArray(shots.original) ? shots.original : [];
+  const corrected = Array.isArray(shots.corrected) ? shots.corrected : original;
+  return {
+    original,
+    corrected,
+    drift: shots.drift ?? null
+  };
 }
 
-export function getProcessedShots(pk: number): PreprocessedShot[] {
-  return processedShotCache.get(pk) || [];
+export function cacheProcessedShots(
+  pk: number,
+  shots: PreprocessedShot[] | Partial<ProcessedSessionShotVariants>
+): void {
+  processedShotCache.set(pk, markRaw(normalizeProcessedShotVariants(shots)));
 }
 
-export function getShotByPk(sessionPk: number, shotPk: number): PreprocessedShot | null {
-  return getProcessedShots(sessionPk).find(shot => shot.pk === shotPk) || null;
+export function getProcessedShotVariants(pk: number): ProcessedSessionShotVariants | null {
+  return processedShotCache.get(pk) || null;
+}
+
+export function getProcessedShots(pk: number, mode: DriftMode = getActiveDriftMode()): PreprocessedShot[] {
+  const variants = processedShotCache.get(pk);
+  return variants?.[mode] || [];
+}
+
+export function getSessionDrift(pk: number): SessionDriftEstimate | null {
+  return processedShotCache.get(pk)?.drift || null;
+}
+
+export function getShotByPk(sessionPk: number, shotPk: number, mode: DriftMode = getActiveDriftMode()): PreprocessedShot | null {
+  return getProcessedShots(sessionPk, mode).find(shot => shot.pk === shotPk) || null;
 }
 
 export function clearSessionData(): void {

@@ -85,6 +85,12 @@ export interface SessionDriftEstimate {
   usedSlopes: ShotDriftSlope[];
 }
 
+export interface ProcessedSessionShotVariants {
+  original: PreprocessedShot[];
+  corrected: PreprocessedShot[];
+  drift: SessionDriftEstimate | null;
+}
+
 function olsSlopeIntercept(t: number[], y: number[]): { m: number; b: number } {
   const n = t.length;
   let st = 0;
@@ -641,6 +647,19 @@ export function processShot<T extends ShotData>(shot: T): ProcessedShot {
   } as ProcessedShot;
 }
 
+export function processSessionShotVariants(shots: ShotData[]): ProcessedSessionShotVariants {
+  const drift = estimateSessionDrift(shots) || null;
+  const originalShots = shots.map(shot => cloneShotBase(shot));
+  const correctedShots = drift
+    ? shots.map(shot => applySessionDriftToShot(shot, drift))
+    : shots.map(shot => cloneShotBase(shot));
+  return {
+    original: addSessionElapsedTimes(originalShots.map(shot => preprocessShot(shot))),
+    corrected: addSessionElapsedTimes(correctedShots.map(shot => preprocessShot(shot))),
+    drift
+  };
+}
+
 export default {
   degToMoa,
   moaToDeg,
@@ -653,6 +672,7 @@ export default {
   segmentLengthMm,
   distanceBetweenMm,
   percentWithinMoa,
+  processSessionShotVariants,
   speedArraysMm,
   absDeviationArray,
   absSpeedArray,

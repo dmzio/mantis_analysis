@@ -3,10 +3,12 @@ import { mount } from "@vue/test-utils";
 import AppRoot from "../../src/App";
 import store from "../../src/store";
 import router from "../../src/router";
+import { appSettings, resetAppSettings } from "../../src/appSettings";
 
 describe("AppRoot", () => {
   beforeEach(() => {
     localStorage.clear();
+    resetAppSettings();
   });
 
   it("resets data and redirects", async () => {
@@ -61,5 +63,21 @@ describe("AppRoot", () => {
     expect(document.body.classList.contains("trace-style-target")).toBe(true);
     const stored = JSON.parse(localStorage.getItem("appSettings") || "{}");
     expect(stored.traceStyle).toBe("target");
+  });
+
+  it("persists drift correction setting", async () => {
+    const wrapper = mount(AppRoot, {
+      global: {
+        stubs: ["router-view", "Menubar", "ToggleSwitch", "SelectButton"],
+        mocks: { $route: { path: '/dashboard' } }
+      }
+    });
+    expect(wrapper.vm.driftCorrection).toBe(true);
+    wrapper.vm.pendingSettings.driftCorrection = false;
+    wrapper.vm.saveSettings();
+    await wrapper.vm.$nextTick();
+    expect(appSettings.driftCorrection).toBe(false);
+    const stored = JSON.parse(localStorage.getItem("appSettings") || "{}");
+    expect(stored.driftCorrection).toBe(false);
   });
 });

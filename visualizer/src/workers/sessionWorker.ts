@@ -1,4 +1,4 @@
-import { addSessionElapsedTimes, preprocessShot } from '../shotProcessor';
+import { processSessionShotVariants } from '../shotProcessor';
 import { aggregateFields } from '../sessionAggregates';
 import { computeSessionMetrics } from '../sessionMetrics';
 
@@ -13,8 +13,8 @@ interface SessionProcessedMessage {
   type: 'session-processed';
   requestId: number;
   sessionPk: number;
-  shots: ReturnType<typeof preprocessShot>[];
-  stats: Record<string, { mean: number; sd: number }>;
+  shots: ReturnType<typeof processSessionShotVariants>;
+  stats: Record<string, any>;
   metrics: Record<string, any>;
 }
 
@@ -26,9 +26,15 @@ ctx.onmessage = event => {
   const session = msg.session || {};
   const pk = session.pk;
   const shots = Array.isArray(session.shots) ? session.shots : [];
-  const processed = addSessionElapsedTimes(shots.map((shot: any) => preprocessShot(shot)));
-  const stats = aggregateFields(processed, msg.summaryFields);
-  const metrics = computeSessionMetrics(processed);
+  const processed = processSessionShotVariants(shots);
+  const stats = {
+    original: aggregateFields(processed.original, msg.summaryFields),
+    corrected: aggregateFields(processed.corrected, msg.summaryFields)
+  };
+  const metrics = {
+    original: computeSessionMetrics(processed.original),
+    corrected: computeSessionMetrics(processed.corrected)
+  };
   const payload: SessionProcessedMessage = {
     type: 'session-processed',
     requestId: msg.requestId,

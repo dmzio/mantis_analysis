@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { estimateSessionDrift, applySessionDriftToShot, ShotData } from '../../src/shotProcessor';
+import {
+  estimateSessionDrift,
+  applySessionDriftToShot,
+  processSessionShotVariants,
+  ShotData
+} from '../../src/shotProcessor';
 
 function buildShot(fs: number, yawSlope: number, pitchSlope: number): ShotData {
   const n = 3 * fs;
@@ -71,5 +76,20 @@ describe('session-level drift detection and correction', () => {
     const slopes = estimateSlope(corrected);
     expect(Math.abs(slopes.yaw)).toBeLessThan(1e-6);
     expect(Math.abs(slopes.pitch)).toBeLessThan(1e-6);
+  });
+
+  it('builds original and corrected processed variants from the same source shots', () => {
+    const fs = 200;
+    const shot = buildShot(fs, 0.45, -0.25);
+    const variants = processSessionShotVariants([shot]);
+    expect(variants.original).toHaveLength(1);
+    expect(variants.corrected).toHaveLength(1);
+    expect(variants.drift).toBeTruthy();
+    expect(variants.original[0].pitch).toEqual(shot.pitch);
+    expect(variants.original[0].yaw).toEqual(shot.yaw);
+    expect(variants.corrected[0].drift_correction).toBeTruthy();
+    const correctedSlopes = estimateSlope(variants.corrected[0]);
+    expect(Math.abs(correctedSlopes.yaw)).toBeLessThan(1e-6);
+    expect(Math.abs(correctedSlopes.pitch)).toBeLessThan(1e-6);
   });
 });

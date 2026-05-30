@@ -5,6 +5,7 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import SelectButton from 'primevue/selectbutton';
 import TraceVisualizer from './RawTraceVisualizer';
 import ProcessedTraceVisualizer from './ProcessedTraceVisualizer';
 import ProcessedStabilityPlot from './ProcessedStabilityPlot';
@@ -12,11 +13,11 @@ import ProcessedSpeedPlot from './ProcessedSpeedPlot';
 import AbsDeviationPlot from './AbsDeviationPlot';
 import AbsSpeedPlot from './AbsSpeedPlot';
 import RingStabilityPlot from './RingStabilityPlot';
-import ToggleSwitch from 'primevue/toggleswitch';
 import store from '../store';
 import { ensureData } from '../dataLoader';
-import { getProcessedShots } from '../sessionData';
-import { processShot, applySessionDriftToShot, estimateSessionDrift, SessionDriftEstimate, ShotData } from '../shotProcessor';
+import { getProcessedShots, getSessionDrift } from '../sessionData';
+import { processShot, SessionDriftEstimate, ShotData } from '../shotProcessor';
+import { appSettings, getActiveDriftMode, type DriftMode } from '../appSettings';
 
 type ShotTab = 'track' | 'raw';
 
@@ -36,14 +37,14 @@ export default defineComponent({
     Tab,
     TabPanels,
     TabPanel,
+    SelectButton,
     TraceVisualizer,
     ProcessedTraceVisualizer,
     ProcessedStabilityPlot,
     ProcessedSpeedPlot,
     AbsDeviationPlot,
     AbsSpeedPlot,
-    RingStabilityPlot,
-    ToggleSwitch
+    RingStabilityPlot
   },
   setup() {
     const route = useRoute();
@@ -53,14 +54,18 @@ export default defineComponent({
     const shot = ref<ShotData | null>(null);
     const processed = ref<any>({});
     const sessionDrift = ref<SessionDriftEstimate | null>(null);
-    const driftEnabled = ref(false);
+    const shotMode = ref<DriftMode>(getActiveDriftMode());
     const displayShot = ref<ShotData | null>(null);
     const rawProcessed = ref<any>(null);
     const activeTab = ref<ShotTab>(normalizeShotTab(route.query.tab));
     const loadError = ref<string | null>(null);
+    const shotModeOptions = [
+      { label: 'Corrected', value: 'corrected' },
+      { label: 'Original', value: 'original' }
+    ];
 
     const hydrateShot = () => {
-      const shotsArr = getProcessedShots(sessionPk.value);
+      const shotsArr = getProcessedShots(sessionPk.value, shotMode.value);
       if (!shotsArr.length) {
         loadError.value = 'Shot data is not yet available.';
         return false;
@@ -77,8 +82,7 @@ export default defineComponent({
         yaw: Array.isArray(found.yaw) ? [...found.yaw] : []
       };
       processed.value = { ...found };
-      sessionDrift.value = estimateSessionDrift(shotsArr) || null;
-      driftEnabled.value = !!sessionDrift.value?.hasDrift;
+      sessionDrift.value = getSessionDrift(sessionPk.value);
       return true;
     };
 
@@ -96,7 +100,7 @@ export default defineComponent({
     });
 
     watch(
-      () => [(store.sessions as Record<number, any>)[sessionPk.value]?.ready, shotPk.value],
+      () => [(store.sessions as Record<number, any>)[sessionPk.value]?.ready, shotPk.value, shotMode.value],
       ([ready]) => {
         if (ready) {
           hydrateShot();
@@ -105,12 +109,15 @@ export default defineComponent({
       { immediate: true }
     );
 
-    watch(sessionDrift, val => {
-      if (!val) {
-        driftEnabled.value = false;
-      } else if (val.hasDrift) {
-        driftEnabled.value = true;
+    watch(
+      () => [sessionPk.value, shotPk.value],
+      () => {
+        shotMode.value = getActiveDriftMode();
       }
+    );
+
+    watch(() => appSettings.driftCorrection, () => {
+      shotMode.value = getActiveDriftMode();
     });
 
     watch(
@@ -134,22 +141,23 @@ export default defineComponent({
     );
 
     watch(
-      [shot, driftEnabled, sessionDrift],
+      [shot],
       () => {
         if (!shot.value) {
           displayShot.value = null;
           rawProcessed.value = null;
           return;
         }
-        const base = applySessionDriftToShot(shot.value, null);
-        const corrected = driftEnabled.value && sessionDrift.value
-          ? applySessionDriftToShot(shot.value, sessionDrift.value)
-          : base;
-        displayShot.value = corrected;
+        const display = {
+          ...shot.value,
+          pitch: [...shot.value.pitch],
+          yaw: [...shot.value.yaw]
+        };
+        displayShot.value = display;
         rawProcessed.value = processShot({
-          ...corrected,
-          pitch: [...corrected.pitch],
-          yaw: [...corrected.yaw]
+          ...display,
+          pitch: [...display.pitch],
+          yaw: [...display.yaw]
         });
       },
       { immediate: true, deep: true }
@@ -159,12 +167,28 @@ export default defineComponent({
     const driftSummary = computed(() => {
       if (!sessionDrift.value) return 'No valid hold window data.';
       const { yawSlope, pitchSlope, usedShots, shotCount, amplitude } = sessionDrift.value;
-      const slopeText = `${yawSlope.toFixed(3)}°/s, ${pitchSlope.toFixed(3)}°/s`;
-      const shotsText = `${usedShots}/${shotCount} shots`;
-      return `${shotsText}; amp ${amplitude.toFixed(2)}°; slopes ${slopeText}`;
+      const yaw = Number.isFinite(yawSlope) ? yawSlope : 0;
+      const pitch = Number.isFinite(pitchSlope) ? pitchSlope : 0;
+      const amp = Number.isFinite(amplitude) ? amplitude : 0;
+      const used = Number.isFinite(usedShots) ? usedShots : 0;
+      const total = Number.isFinite(shotCount) ? shotCount : 0;
+      const slopeText = `${yaw.toFixed(3)}°/s, ${pitch.toFixed(3)}°/s`;
+      const shotsText = `${used}/${total} shots`;
+      return `${shotsText}; amp ${amp.toFixed(2)}°; slopes ${slopeText}`;
     });
 
-    return { shot, processed, displayShot, rawProcessed, driftEnabled, driftAvailable, driftSummary, activeTab, loadError };
+    return {
+      shot,
+      processed,
+      displayShot,
+      rawProcessed,
+      shotMode,
+      shotModeOptions,
+      driftAvailable,
+      driftSummary,
+      activeTab,
+      loadError
+    };
   },
   template: `
     <div class="session-view">
@@ -174,6 +198,22 @@ export default defineComponent({
           <Tab value="track">Track</Tab>
           <Tab value="raw">Raw</Tab>
         </TabList>
+        <div class="shot-mode-bar">
+          <div class="drift-toggle">
+            <label class="drift-label">
+              <span>Track data</span>
+              <SelectButton
+                v-model="shotMode"
+                :options="shotModeOptions"
+                optionLabel="label"
+                optionValue="value"
+                :disabled="!driftAvailable"
+                data-testid="shot-mode-select"
+              />
+            </label>
+            <small class="drift-summary">{{ driftSummary }}</small>
+          </div>
+        </div>
         <TabPanels>
           <TabPanel value="track">
             <div class="shot-layout">
@@ -193,13 +233,6 @@ export default defineComponent({
           </TabPanel>
           <TabPanel value="raw">
             <div class="shot-layout">
-              <div class="drift-toggle">
-                <label class="drift-label">
-                  <span>Drift correction</span>
-                  <ToggleSwitch v-model="driftEnabled" :disabled="!driftAvailable" />
-                </label>
-                <small class="drift-summary">{{ driftSummary }}</small>
-              </div>
               <div class="plot-row">
                 <ProcessedStabilityPlot v-if="rawProcessed" :shot="rawProcessed" trim-pre-shot />
               </div>

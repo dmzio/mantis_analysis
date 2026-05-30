@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { addSessionElapsedTimes, preprocessShot } from '../src/shotProcessor';
+import { processSessionShotVariants } from '../src/shotProcessor';
 import { aggregateFields } from '../src/sessionAggregates';
 import { computeSessionMetrics } from '../src/sessionMetrics';
 
@@ -181,9 +181,15 @@ vi.mock('../src/workers/sessionWorker?worker', () => {
     onerror = null as ((event: ErrorEvent) => void) | null;
 
     postMessage(message: any) {
-      const shots = addSessionElapsedTimes((message.session.shots || []).map((shot: any) => preprocessShot(shot)));
-      const stats = aggregateFields(shots, message.summaryFields);
-      const metrics = computeSessionMetrics(shots);
+      const shots = processSessionShotVariants(message.session.shots || []);
+      const stats = {
+        original: aggregateFields(shots.original, message.summaryFields),
+        corrected: aggregateFields(shots.corrected, message.summaryFields)
+      };
+      const metrics = {
+        original: computeSessionMetrics(shots.original),
+        corrected: computeSessionMetrics(shots.corrected)
+      };
       const payload = {
         type: 'session-processed',
         requestId: message.requestId,

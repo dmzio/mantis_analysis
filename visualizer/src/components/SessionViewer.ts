@@ -1,6 +1,7 @@
 import { defineComponent } from 'vue';
 import * as d3 from 'd3';
 import { estimateSessionDrift, applySessionDriftToShot, SessionDriftEstimate, ShotData } from '../shotProcessor';
+import { getActiveDriftMode } from '../appSettings';
 
 export default defineComponent({
   name: 'SessionViewer',
@@ -46,7 +47,7 @@ export default defineComponent({
     toRelativeCoords(shot: ShotData) {
       const corr = (this.$refs.corrSelect as HTMLSelectElement)?.value || 'none';
       let working: ShotData = shot;
-      if (corr === 'session' && this.driftEstimate?.hasDrift) {
+      if (corr === 'session' && this.driftEstimate) {
         working = applySessionDriftToShot(shot, this.driftEstimate);
       }
       const pitch = working.pitch ?? [];
@@ -142,7 +143,8 @@ export default defineComponent({
       (this.$refs.shotSlider as HTMLInputElement).value = '0';
       (this.$refs.speedSlider as HTMLInputElement).value = '1';
       (this.$refs.speedVal as HTMLElement).textContent = '1×';
-      (this.$refs.corrSelect as HTMLSelectElement).value = this.driftEstimate?.hasDrift ? 'session' : 'none';
+      (this.$refs.corrSelect as HTMLSelectElement).value =
+        getActiveDriftMode() === 'corrected' && this.driftEstimate ? 'session' : 'none';
       this.current = 0;
       this.drawCanvas();
     },

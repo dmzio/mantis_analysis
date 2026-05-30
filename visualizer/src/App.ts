@@ -8,6 +8,7 @@ import Button from 'primevue/button';
 import SelectButton from 'primevue/selectbutton';
 import router from './router';
 import store, { resetStore } from './store';
+import { appSettings, loadAppSettings, updateAppSettings, type AppSettings } from './appSettings';
 import {
   DEFAULT_TRACE_STYLE,
   TRACE_STYLE_OPTIONS,
@@ -35,20 +36,18 @@ export default defineComponent({
     }
   },
   data() {
-    const storedSettings = typeof localStorage === 'undefined'
-      ? {}
-      : JSON.parse(localStorage.getItem('appSettings') || '{}');
-    const legacyDark = typeof localStorage === 'undefined'
-      ? true
-      : (localStorage.getItem('darkMode') ?? 'true') === 'true';
-    const dark = storedSettings.dark ?? legacyDark;
-    const traceStyle = (storedSettings.traceStyle as TraceStyleId) ?? DEFAULT_TRACE_STYLE;
+    const settings = loadAppSettings();
+    Object.assign(appSettings, settings);
+    const dark = settings.dark;
+    const traceStyle = settings.traceStyle ?? DEFAULT_TRACE_STYLE;
+    const driftCorrection = settings.driftCorrection;
     return {
       dark,
       traceStyle,
+      driftCorrection,
       traceStyleOptions: TRACE_STYLE_OPTIONS,
       showSettings: false,
-      pendingSettings: { dark, traceStyle }
+      pendingSettings: { dark, traceStyle, driftCorrection }
     };
   },
   mounted() {
@@ -66,6 +65,9 @@ export default defineComponent({
     traceStyle(val: TraceStyleId) {
       this.persistSettings({ traceStyle: val });
       this.applyTraceStyle(val);
+    },
+    driftCorrection(val: boolean) {
+      this.persistSettings({ driftCorrection: val });
     }
   },
   methods: {
@@ -82,23 +84,29 @@ export default defineComponent({
     applyTraceStyle(val: TraceStyleId) {
       setActiveTraceStyle(val);
     },
-    persistSettings(partial: Record<string, unknown>) {
-      if (typeof localStorage === 'undefined') return;
-      const current = JSON.parse(localStorage.getItem('appSettings') || '{}');
-      const next = { ...current, ...partial };
-      localStorage.setItem('appSettings', JSON.stringify(next));
+    persistSettings(partial: Partial<AppSettings>) {
+      updateAppSettings(partial);
     },
     openSettings() {
-      this.pendingSettings = { dark: this.dark, traceStyle: this.traceStyle };
+      this.pendingSettings = {
+        dark: this.dark,
+        traceStyle: this.traceStyle,
+        driftCorrection: this.driftCorrection
+      };
       this.showSettings = true;
     },
     cancelSettings() {
-      this.pendingSettings = { dark: this.dark, traceStyle: this.traceStyle };
+      this.pendingSettings = {
+        dark: this.dark,
+        traceStyle: this.traceStyle,
+        driftCorrection: this.driftCorrection
+      };
       this.showSettings = false;
     },
     saveSettings() {
       this.dark = this.pendingSettings.dark;
       this.traceStyle = this.pendingSettings.traceStyle;
+      this.driftCorrection = this.pendingSettings.driftCorrection;
       this.showSettings = false;
     }
   },
@@ -145,6 +153,10 @@ export default defineComponent({
           <label class="settings-field">
             <span>Dark mode</span>
             <ToggleSwitch v-model="pendingSettings.dark" />
+          </label>
+          <label class="settings-field">
+            <span>Drift correction</span>
+            <ToggleSwitch v-model="pendingSettings.driftCorrection" data-testid="drift-correction-toggle" />
           </label>
           <label class="settings-field">
             <span>Trace visualizer style</span>
