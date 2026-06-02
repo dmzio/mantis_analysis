@@ -19,6 +19,14 @@ export interface BucketPoint {
   q3: number;
 }
 
+export interface FieldStats {
+  mean: number;
+  sd: number;
+  median: number;
+  q1: number;
+  q3: number;
+}
+
 /** Compute mean and standard deviation for a set of numbers. */
 function meanSd(values: number[]): { mean: number; sd: number } {
   const mean = values.reduce((s, v) => s + v, 0) / values.length;
@@ -92,12 +100,18 @@ export function aggregateSeries(shots: any[], field: string, step = 10): SeriesP
 /**
  * Aggregate simple numeric fields across shots.
  */
-export function aggregateFields(shots: any[], fields: string[]): Record<string, { mean: number; sd: number }> {
-  const res: Record<string, { mean: number; sd: number }> = {};
+export function aggregateFields(shots: any[], fields: string[]): Record<string, FieldStats> {
+  const res: Record<string, FieldStats> = {};
   fields.forEach(f => {
-    const vals = shots.map(s => s[f]).filter((v: any) => typeof v === 'number');
+    const vals = shots.map(s => s[f]).filter((v: any) => typeof v === 'number' && Number.isFinite(v));
     if (!vals.length) return;
-    res[f] = meanSd(vals as number[]);
+    const sorted = [...vals].sort((a, b) => a - b) as number[];
+    res[f] = {
+      ...meanSd(vals as number[]),
+      median: quantile(sorted, 0.5),
+      q1: quantile(sorted, 0.25),
+      q3: quantile(sorted, 0.75)
+    };
   });
   return res;
 }

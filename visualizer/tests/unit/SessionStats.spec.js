@@ -22,13 +22,15 @@ describe('SessionStats', () => {
         plugins: [PrimeVue],
         stubs: {
           RawTraceVisualizer: { template: '<svg></svg>' },
-          SessionShotGroup: { template: '<div class="group"></div>' }
+          SessionShotGroup: { template: '<div class="group"></div>' },
+          SessionVectorPlots: { template: '<div class="vectors"></div>' }
         }
       }
     });
     expect(wrapper.find('svg').exists()).toBe(true);
     expect(wrapper.find('img.session-photo').attributes('src')).toBe('/foo.jpg');
     expect(wrapper.find('.group').exists()).toBe(true);
+    expect(wrapper.find('.vectors').exists()).toBe(true);
   });
 
   it('renders notes and omits unused metadata', () => {
@@ -48,7 +50,8 @@ describe('SessionStats', () => {
         plugins: [PrimeVue],
         stubs: {
           RawTraceVisualizer: { template: '<svg></svg>' },
-          SessionShotGroup: { template: '<div class="group"></div>' }
+          SessionShotGroup: { template: '<div class="group"></div>' },
+          SessionVectorPlots: { template: '<div class="vectors"></div>' }
         }
       }
     });
@@ -76,7 +79,8 @@ describe('SessionStats', () => {
         plugins: [PrimeVue],
         stubs: {
           RawTraceVisualizer: { template: '<svg></svg>' },
-          SessionShotGroup: { template: '<div class="group"></div>' }
+          SessionShotGroup: { template: '<div class="group"></div>' },
+          SessionVectorPlots: { template: '<div class="vectors"></div>' }
         }
       }
     });
@@ -97,7 +101,8 @@ describe('SessionStats', () => {
         plugins: [PrimeVue],
         stubs: {
           RawTraceVisualizer: { template: '<svg></svg>' },
-          SessionShotGroup: { template: '<div class="group"></div>' }
+          SessionShotGroup: { template: '<div class="group"></div>' },
+          SessionVectorPlots: { template: '<div class="vectors"></div>' }
         }
       }
     });

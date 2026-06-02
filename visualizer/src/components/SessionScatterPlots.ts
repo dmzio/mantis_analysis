@@ -13,6 +13,9 @@ interface ChartBuildResult {
   fullLabels: string[];
   means: (number | null)[];
   sds: (number | null)[];
+  medians: (number | null)[];
+  q1s: (number | null)[];
+  q3s: (number | null)[];
   metric: SessionMetricDefinition;
 }
 
@@ -105,15 +108,23 @@ export default defineComponent({
                 const idx = context.dataIndex;
                 const mean = chartDef.means[idx];
                 const sd = chartDef.sds[idx];
-                if (mean == null) {
+                const median = chartDef.medians[idx];
+                const q1 = chartDef.q1s[idx];
+                const q3 = chartDef.q3s[idx];
+                if (median == null && mean == null) {
                   return `${chartDef.metric.label}: —`;
                 }
-                const meanStr = mean.toFixed(chartDef.metric.decimals);
-                if (sd != null) {
-                  const sdStr = sd.toFixed(chartDef.metric.decimals);
-                  return `${chartDef.metric.label}: ${meanStr} ± ${sdStr}`;
+                const value = median ?? mean;
+                const valueStr = value.toFixed(chartDef.metric.decimals);
+                if (q1 != null && q3 != null) {
+                  return `${chartDef.metric.label}: median ${valueStr} (IQR ${q1.toFixed(chartDef.metric.decimals)}-${q3.toFixed(chartDef.metric.decimals)})`;
                 }
-                return `${chartDef.metric.label}: ${meanStr}`;
+                if (mean != null && sd != null) {
+                  const meanStr = mean.toFixed(chartDef.metric.decimals);
+                  const sdStr = sd.toFixed(chartDef.metric.decimals);
+                  return `${chartDef.metric.label}: mean ${meanStr} ± ${sdStr}`;
+                }
+                return `${chartDef.metric.label}: ${valueStr}`;
               }
             }
           }
@@ -124,25 +135,35 @@ export default defineComponent({
     function buildData(metric: SessionMetricDefinition, base: ChartBase): ChartBuildResult {
       const meanValues: (number | null)[] = [];
       const sdValues: (number | null)[] = [];
+      const medianValues: (number | null)[] = [];
+      const q1Values: (number | null)[] = [];
+      const q3Values: (number | null)[] = [];
       base.sorted.forEach((session: any) => {
         const stats = session.metrics?.[metric.key];
         meanValues.push(stats?.mean ?? null);
         sdValues.push(stats?.sd ?? null);
+        medianValues.push(stats?.median ?? stats?.mean ?? null);
+        q1Values.push(stats?.q1 ?? null);
+        q3Values.push(stats?.q3 ?? null);
       });
 
-      const upper = meanValues.map((mean, index) => {
-        if (mean == null) return null;
+      const upper = medianValues.map((median, index) => {
+        if (median == null) return null;
+        const q3 = q3Values[index];
+        const mean = meanValues[index];
         const sd = sdValues[index];
-        const candidate = sd != null ? mean + sd : mean;
+        const candidate = q3 ?? (mean != null && sd != null ? mean + sd : median);
         if (metric.max != null) {
           return Math.min(candidate, metric.max);
         }
         return candidate;
       });
-      const lower = meanValues.map((mean, index) => {
-        if (mean == null) return null;
+      const lower = medianValues.map((median, index) => {
+        if (median == null) return null;
+        const q1 = q1Values[index];
+        const mean = meanValues[index];
         const sd = sdValues[index];
-        const candidate = sd != null ? mean - sd : mean;
+        const candidate = q1 ?? (mean != null && sd != null ? mean - sd : median);
         const minBound = metric.min ?? -Infinity;
         return Math.max(candidate, minBound);
       });
@@ -156,6 +177,9 @@ export default defineComponent({
         fullLabels: base.fullLabels,
         means: meanValues,
         sds: sdValues,
+        medians: medianValues,
+        q1s: q1Values,
+        q3s: q3Values,
         metric,
         data: {
           labels: base.labels,
@@ -182,7 +206,7 @@ export default defineComponent({
             },
             {
               label: metric.label,
-              data: meanValues,
+              data: medianValues,
               showLine: true,
               borderColor: '#37b24d',
               backgroundColor: '#37b24d',

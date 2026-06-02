@@ -82,6 +82,11 @@ export default defineComponent({
       const num = Number(val);
       return Number.isFinite(num) ? num.toFixed(1) : '';
     };
+    const formatAngle = (val: number | null | undefined) => {
+      if (val === null || val === undefined) return '';
+      const num = Number(val);
+      return Number.isFinite(num) ? `${num.toFixed(1)}°` : '';
+    };
     const timing = computed(() => {
       const s = shot.value as Record<string, any> | null;
       if (!s) return [] as any[];
@@ -102,6 +107,9 @@ export default defineComponent({
         { key: 'Hold ellipse angle', value: s.ellipse_angle_deg != null ? `${s.ellipse_angle_deg.toFixed(1)}°` : '' },
         { key: 'Hold area', value: s.ellipse_area_mm2 != null ? `${s.ellipse_area_mm2.toFixed(1)} mm²` : '' },
         { key: 'Post-shot stability 500 ms', value: s.post_shot_stability_500ms_mm != null ? `${s.post_shot_stability_500ms_mm.toFixed(1)} mm` : '' },
+        { key: 'Post-shot max excursion 500 ms', value: s.post_shot_max_excursion_500ms_mm != null ? `${s.post_shot_max_excursion_500ms_mm.toFixed(1)} mm` : '' },
+        { key: 'Post-shot max direction', value: formatAngle(s.post_shot_max_excursion_500ms_angle_deg) },
+        { key: 'Pull direction', value: formatAngle(s.delta_pull_angle_deg) },
         { key: 'Impact offset', value: radial != null ? `${radial.toFixed(1)} mm` : '' }
       ].filter(row => row.value !== '');
     });

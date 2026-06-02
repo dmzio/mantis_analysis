@@ -942,6 +942,29 @@ header {
   margin: 0;
 }
 
+.session-vector-plots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.session-vector-plots__chart {
+  min-height: clamp(300px, 34vh, 460px);
+}
+
+.session-vector-plots__chart .p-chart {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+@media (max-width: 1200px) {
+  .session-vector-plots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .card {
   background: var(--surface-800);
   color: var(--text-color);

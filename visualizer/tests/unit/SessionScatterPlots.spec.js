@@ -20,14 +20,16 @@ describe('SessionScatterPlots', () => {
         hold: { mean: 1.2, sd: 0.1 },
         split: { mean: 0.8, sd: 0.05 },
         length1s: { mean: 15, sd: 2 },
-        deltaPull: { mean: 4.5, sd: 0.25 }
+        deltaPull: { mean: 20, sd: 7, median: 4.5, q1: 4, q3: 6 },
+        postShotMax: { mean: 30, sd: 8, median: 12, q1: 10, q3: 15 }
       }),
       makeSession(2, '2024-01-02', {
         percent10: { mean: 60, sd: 4 },
         hold: { mean: 1.4, sd: 0.2 },
         split: { mean: 0.7, sd: 0.05 },
         length1s: { mean: 17, sd: 1.5 },
-        deltaPull: { mean: 3.8, sd: 0.15 }
+        deltaPull: { mean: 15, sd: 6, median: 3.8, q1: 3, q3: 5 },
+        postShotMax: { mean: 25, sd: 9, median: 9, q1: 8, q3: 11 }
       })
     ];
     const wrapper = mount(SessionScatterPlots, {
@@ -35,7 +37,7 @@ describe('SessionScatterPlots', () => {
       global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
     });
     const charts = wrapper.vm.charts;
-    expect(charts.length).toBe(5);
+    expect(charts.length).toBe(6);
     const firstChart = charts[0];
     expect(firstChart.key).toBe('percent10');
     expect(firstChart.data.datasets[2].data[0]).toBe(40);
@@ -43,6 +45,11 @@ describe('SessionScatterPlots', () => {
     expect(firstChart.data.datasets[1].fill).toBe('-1');
     const deltaChart = charts.find(c => c.key === 'deltaPull');
     expect(deltaChart.label).toBe('Δpull (mm)');
+    expect(deltaChart.data.datasets[2].data[0]).toBe(4.5);
+    expect(deltaChart.data.datasets[0].data[0]).toBe(6);
+    expect(deltaChart.data.datasets[1].data[0]).toBe(4);
+    const postShotChart = charts.find(c => c.key === 'postShotMax');
+    expect(postShotChart.label).toBe('Post max (mm)');
   });
 
   it('sorts sessions chronologically', () => {

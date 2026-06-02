@@ -91,6 +91,25 @@ describe('shotProcessor', () => {
     }
   });
 
+  it('derives pull vector and post-shot max excursion direction', () => {
+    const shot = {
+      pitch: [0, 0, 0, 0, 0.1, 0.1, 0.2],
+      yaw: [0, 0, 0, 0, 0.1, 0.12, 0.1],
+      shot_index: 4,
+      sample_rate: 4
+    };
+    const pre = preprocessShot(shot as any);
+    const expectedPull = 0.1 * 60 * MM_PER_MOA_10M;
+    expect(pre.delta_pull).toBeCloseTo(Math.hypot(expectedPull, expectedPull));
+    expect(pre.delta_pull_x_mm).toBeCloseTo(expectedPull);
+    expect(pre.delta_pull_y_mm).toBeCloseTo(expectedPull);
+    expect(pre.delta_pull_angle_deg).toBeCloseTo(45);
+    expect(pre.post_shot_max_excursion_500ms_mm).toBeCloseTo(expectedPull);
+    expect(pre.post_shot_max_excursion_500ms_x_mm).toBeCloseTo(0);
+    expect(pre.post_shot_max_excursion_500ms_y_mm).toBeCloseTo(expectedPull);
+    expect(pre.post_shot_max_excursion_500ms_angle_deg).toBeCloseTo(90);
+  });
+
   it('omits post-shot stability when the full 500 ms window is unavailable', () => {
     const shot = {
       pitch: [0, 0.01, 0.02, 0.03, 0.04],
@@ -100,6 +119,7 @@ describe('shotProcessor', () => {
     };
     const pre = preprocessShot(shot as any);
     expect(pre.post_shot_stability_500ms_mm).toBeNull();
+    expect(pre.post_shot_max_excursion_500ms_mm).toBeNull();
   });
 
   it('derives elapsed session time from cumulative split', () => {

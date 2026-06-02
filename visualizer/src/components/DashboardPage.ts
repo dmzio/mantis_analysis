@@ -160,12 +160,21 @@ export default defineComponent({
               };
             }
           }
-          const metrics: Record<string, { mean: number | null; sd: number | null }> = {};
+          const metrics: Record<string, {
+            mean: number | null;
+            sd: number | null;
+            median: number | null;
+            q1: number | null;
+            q3: number | null;
+          }> = {};
           SESSION_METRICS.forEach(def => {
             const stat = metricStats?.[def.key];
             metrics[def.key] = {
               mean: stat?.mean ?? null,
-              sd: stat?.sd ?? null
+              sd: stat?.sd ?? null,
+              median: stat?.median ?? stat?.mean ?? null,
+              q1: stat?.q1 ?? null,
+              q3: stat?.q3 ?? null
             };
           });
           const rawDuration = s.duration_label || s.time_display || s.time_bars;

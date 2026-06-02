@@ -16,6 +16,7 @@ const SUMMARY_FIELDS = [
   'split_s',
   'score_numeric',
   'post_shot_stability_500ms_mm',
+  'post_shot_max_excursion_500ms_mm',
   'ellipse_area_mm2',
   'ellipse_major_mm',
   'ellipse_minor_mm'

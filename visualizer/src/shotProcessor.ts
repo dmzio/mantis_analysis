@@ -26,6 +26,9 @@ export interface PreprocessedShot extends ShotData {
   pull_index_calc: number;
   length_1s: number;
   delta_pull: number;
+  delta_pull_x_mm: number;
+  delta_pull_y_mm: number;
+  delta_pull_angle_deg: number | null;
   percent_10: number;
   hold_duration_s: number;
   trigger_hold_s: number | null;
@@ -37,6 +40,10 @@ export interface PreprocessedShot extends ShotData {
   impact_pitch_mm: number;
   impact_yaw_mm: number;
   post_shot_stability_500ms_mm: number | null;
+  post_shot_max_excursion_500ms_mm: number | null;
+  post_shot_max_excursion_500ms_x_mm: number | null;
+  post_shot_max_excursion_500ms_y_mm: number | null;
+  post_shot_max_excursion_500ms_angle_deg: number | null;
   session_elapsed_s: number | null;
   hold_ellipse: HoldEllipse | null;
   ellipse_major_moa: number | null;
@@ -484,6 +491,34 @@ export function distanceBetweenMm(relPitch: number[], relYaw: number[], a: numbe
   return moaToMm(Math.hypot(dp, dy), mmPerMoa);
 }
 
+function vectorBetweenMm(
+  relPitch: number[],
+  relYaw: number[],
+  fromIndex: number,
+  toIndex: number,
+  mmPerMoa = MM_PER_MOA_10M
+): { x: number; y: number; magnitude: number; angleDeg: number | null } {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= relPitch.length ||
+    fromIndex >= relYaw.length ||
+    toIndex >= relPitch.length ||
+    toIndex >= relYaw.length
+  ) {
+    return { x: 0, y: 0, magnitude: 0, angleDeg: null };
+  }
+  const x = moaToMm(relYaw[toIndex] - relYaw[fromIndex], mmPerMoa);
+  const y = moaToMm(relPitch[toIndex] - relPitch[fromIndex], mmPerMoa);
+  const magnitude = Math.hypot(x, y);
+  return {
+    x,
+    y,
+    magnitude,
+    angleDeg: magnitude > 0 ? Math.atan2(y, x) * (180 / Math.PI) : null
+  };
+}
+
 /** Percentage of samples within given radius MOA between two indices. */
 export function percentWithinMoa(relPitch: number[], relYaw: number[], start: number, end: number, radiusMoa: number): number {
   let total = 0;
@@ -537,7 +572,8 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
   const pre_shot_1s_index = Math.max(0, shot_index - sr);
   const pull_index_calc = calcPullIndex(shot);
   const length_1s = segmentLengthMm(rel_pitch, rel_yaw, pre_shot_1s_index, shot_index);
-  const delta_pull = distanceBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
+  const pullVector = vectorBetweenMm(rel_pitch, rel_yaw, pull_index_calc, shot_index);
+  const delta_pull = pullVector.magnitude;
   const percent_10 = percentWithinMoa(rel_pitch, rel_yaw, start_index, shot_index, 1.98);
   const holdSamples = Math.max(pull_index_calc - start_index, 0);
   const hold_duration_s = holdSamples > 0 ? holdSamples / sr : 0;
@@ -554,6 +590,10 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
   const postShotEnd = postShotStart + postShotSamples - 1;
   const hasPostShotWindow = postShotEnd < rel_pitch.length && postShotEnd < rel_yaw.length;
   let post_shot_stability_500ms_mm: number | null = null;
+  let post_shot_max_excursion_500ms_mm: number | null = null;
+  let post_shot_max_excursion_500ms_x_mm: number | null = null;
+  let post_shot_max_excursion_500ms_y_mm: number | null = null;
+  let post_shot_max_excursion_500ms_angle_deg: number | null = null;
   if (hasPostShotWindow) {
     const postPitchMm = rel_pitch.slice(postShotStart, postShotEnd + 1).map(value => moaToMm(value));
     const postYawMm = rel_yaw.slice(postShotStart, postShotEnd + 1).map(value => moaToMm(value));
@@ -562,6 +602,17 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
     if (pitchSd !== null && yawSd !== null) {
       post_shot_stability_500ms_mm = Math.hypot(pitchSd, yawSd);
     }
+    let maxVector = vectorBetweenMm(rel_pitch, rel_yaw, shot_index, postShotStart);
+    for (let i = postShotStart + 1; i <= postShotEnd; i++) {
+      const candidate = vectorBetweenMm(rel_pitch, rel_yaw, shot_index, i);
+      if (candidate.magnitude > maxVector.magnitude) {
+        maxVector = candidate;
+      }
+    }
+    post_shot_max_excursion_500ms_mm = maxVector.magnitude;
+    post_shot_max_excursion_500ms_x_mm = maxVector.x;
+    post_shot_max_excursion_500ms_y_mm = maxVector.y;
+    post_shot_max_excursion_500ms_angle_deg = maxVector.angleDeg;
   }
   const hold_ellipse = computeHoldEllipse(rel_pitch, rel_yaw, start_index, shot_index);
   const ellipse_major_moa = hold_ellipse ? hold_ellipse.major_moa : null;
@@ -580,6 +631,9 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
     pull_index_calc,
     length_1s,
     delta_pull,
+    delta_pull_x_mm: pullVector.x,
+    delta_pull_y_mm: pullVector.y,
+    delta_pull_angle_deg: pullVector.angleDeg,
     percent_10,
     hold_duration_s,
     trigger_hold_s,
@@ -591,6 +645,10 @@ export function preprocessShot<T extends ShotData>(shot: T): PreprocessedShot {
     impact_pitch_mm,
     impact_yaw_mm,
     post_shot_stability_500ms_mm,
+    post_shot_max_excursion_500ms_mm,
+    post_shot_max_excursion_500ms_x_mm,
+    post_shot_max_excursion_500ms_y_mm,
+    post_shot_max_excursion_500ms_angle_deg,
     session_elapsed_s: null,
     hold_ellipse,
     ellipse_major_moa,

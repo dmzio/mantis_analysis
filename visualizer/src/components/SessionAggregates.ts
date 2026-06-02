@@ -200,6 +200,7 @@ export default defineComponent({
       split_s: 'Split (s)',
       score_numeric: 'Score',
       post_shot_stability_500ms_mm: 'Post-shot stability 500 ms (mm)',
+      post_shot_max_excursion_500ms_mm: 'Post-shot max excursion 500 ms (mm)',
       ellipse_area_mm2: 'Hold area (mm²)',
       ellipse_major_mm: 'Ellipse major (mm)',
       ellipse_minor_mm: 'Ellipse minor (mm)'
@@ -277,6 +278,7 @@ export default defineComponent({
         'split_s',
         'score_numeric',
         'post_shot_stability_500ms_mm',
+        'post_shot_max_excursion_500ms_mm',
         'ellipse_area_mm2',
         'ellipse_major_mm',
         'ellipse_minor_mm'

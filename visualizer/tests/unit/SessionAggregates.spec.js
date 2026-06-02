@@ -22,6 +22,7 @@ describe('SessionAggregates', () => {
         session_elapsed_s: 0,
         trigger_hold_s: 0.15, trigger_pull_s: 0.12, split_s: 1, score_numeric: 95,
         post_shot_stability_500ms_mm: 3,
+        post_shot_max_excursion_500ms_mm: 12,
         ellipse_major_mm: 5, ellipse_minor_mm: 3, ellipse_area_mm2: 40
       },
       {
@@ -31,6 +32,7 @@ describe('SessionAggregates', () => {
         session_elapsed_s: 301,
         trigger_hold_s: 0.18, trigger_pull_s: 0.14, split_s: 1.1, score_numeric: 94,
         post_shot_stability_500ms_mm: 4,
+        post_shot_max_excursion_500ms_mm: 18,
         ellipse_major_mm: 6, ellipse_minor_mm: 4, ellipse_area_mm2: 50
       }
     ];
@@ -41,6 +43,7 @@ describe('SessionAggregates', () => {
     expect(store.aggregates[1]).toBeTruthy();
     expect(store.aggregates[1].stats.hold_duration_s.mean).toBeGreaterThan(0);
     expect(store.aggregates[1].stats.post_shot_stability_500ms_mm.mean).toBeCloseTo(3.5);
+    expect(store.aggregates[1].stats.post_shot_max_excursion_500ms_mm.median).toBeCloseTo(15);
     expect(wrapper.text()).toContain('Aiming stability vs aiming time');
     expect(wrapper.text()).toContain('Post-shot stability vs aiming time');
   });

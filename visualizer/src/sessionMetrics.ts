@@ -24,6 +24,9 @@ export interface SessionMetricDefinition {
 export interface SessionMetricStats {
   mean: number | null;
   sd: number | null;
+  median: number | null;
+  q1: number | null;
+  q3: number | null;
 }
 
 /** Describes the default session-level metrics derived from shot data. */
@@ -74,6 +77,15 @@ export const SESSION_METRICS: SessionMetricDefinition[] = [
     decimals: 1,
     min: 0,
     columnWidth: '6rem'
+  },
+  {
+    key: 'postShotMax',
+    field: 'post_shot_max_excursion_500ms_mm',
+    label: 'Post max (mm)',
+    axisLabel: 'mm',
+    decimals: 1,
+    min: 0,
+    columnWidth: '7rem'
   }
 ];
 
@@ -96,7 +108,10 @@ export function computeSessionMetrics(shots: any[]): Record<string, SessionMetri
     const scale = metric.scale ?? 1;
     stats[metric.key] = {
       mean: entry.mean * scale,
-      sd: entry.sd * scale
+      sd: entry.sd * scale,
+      median: entry.median * scale,
+      q1: entry.q1 * scale,
+      q3: entry.q3 * scale
     };
   });
   return stats;

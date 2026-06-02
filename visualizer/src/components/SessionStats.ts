@@ -2,12 +2,13 @@ import { computed, defineComponent } from 'vue';
 import Image from 'primevue/image';
 import TraceVisualizer from './RawTraceVisualizer';
 import SessionShotGroup from './SessionShotGroup';
+import SessionVectorPlots from './SessionVectorPlots';
 import { formatDate } from '../dateFmt';
 import { formatSessionDuration } from '../durationFmt';
 
 export default defineComponent({
   name: 'SessionStats',
-  components: { TraceVisualizer, Image, SessionShotGroup },
+  components: { TraceVisualizer, Image, SessionShotGroup, SessionVectorPlots },
   props: {
     shots: { type: Array, required: true },
     photo: { type: String, default: '' },
@@ -169,6 +170,7 @@ export default defineComponent({
             <TraceVisualizer :shots="shots" />
           </div>
         </div>
+        <SessionVectorPlots :shots="processedShots" />
       </div>
     </div>
   `

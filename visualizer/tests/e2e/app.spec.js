@@ -93,8 +93,9 @@ test("dashboard lists sessions", async ({ page }) => {
   const headerRow = page.locator('[data-testid="session-table"] thead tr');
   await expect(headerRow).toContainText('Hold (s)');
   await expect(headerRow).toContainText('Δpull (mm)');
+  await expect(headerRow).toContainText('Post max (mm)');
   const percentCell = page.locator('[data-testid="metric-percent10"]').first();
-  await expect(percentCell).toHaveAttribute('title', /±/);
+  await expect(percentCell).toHaveAttribute('title', /median .*IQR/);
   const tableWrapper = page.locator('[data-testid="session-table"]');
   await expect(tableWrapper).toBeVisible();
   const [scrollWidth, clientWidth] = await Promise.all([
@@ -110,7 +111,7 @@ test("dashboard lists sessions", async ({ page }) => {
   });
   expect(hasHorizontalOverflow).toBe(false);
   const chartCards = page.locator('[data-testid^="chart-"]');
-  await expect(chartCards).toHaveCount(5);
+  await expect(chartCards).toHaveCount(6);
 
   await expect(page.locator('body')).toHaveClass(/p-dark/);
   await page.locator('[data-testid="theme-toggle"]').click();

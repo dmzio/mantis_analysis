@@ -34,21 +34,27 @@ export default defineComponent({
     },
     metricValue(row: any, metric: SessionMetricDefinition) {
       const stat = row.metrics?.[metric.key];
-      const formatted = formatMetricValue(stat?.mean ?? null, metric.decimals);
+      const formatted = formatMetricValue(stat?.median ?? stat?.mean ?? null, metric.decimals);
       return formatted ?? '—';
     },
     metricTooltip(row: any, metric: SessionMetricDefinition) {
       const stat = row.metrics?.[metric.key];
-      if (!stat || stat.mean == null) {
+      if (!stat || (stat.median == null && stat.mean == null)) {
         return `${metric.label}: —`;
       }
-      const meanStr = formatMetricValue(stat.mean, metric.decimals);
+      const medianStr = formatMetricValue(stat.median ?? stat.mean, metric.decimals);
+      const q1Str = formatMetricValue(stat.q1 ?? null, metric.decimals);
+      const q3Str = formatMetricValue(stat.q3 ?? null, metric.decimals);
+      if (medianStr && q1Str && q3Str) {
+        return `${metric.label}: median ${medianStr} (IQR ${q1Str}-${q3Str})`;
+      }
+      const meanStr = formatMetricValue(stat.mean ?? null, metric.decimals);
       const sdStr = formatMetricValue(stat.sd ?? null, metric.decimals);
       if (meanStr && sdStr) {
-        return `${metric.label}: ${meanStr} ± ${sdStr}`;
+        return `${metric.label}: mean ${meanStr} ± ${sdStr}`;
       }
-      if (meanStr) {
-        return `${metric.label}: ${meanStr}`;
+      if (medianStr) {
+        return `${metric.label}: ${medianStr}`;
       }
       return `${metric.label}: —`;
     },
