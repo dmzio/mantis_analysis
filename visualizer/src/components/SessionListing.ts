@@ -4,6 +4,8 @@ import Column from 'primevue/column';
 import { useRouter } from 'vue-router';
 import { SESSION_METRICS, SessionMetricDefinition, formatMetricValue } from '../sessionMetrics';
 
+const TABLE_METRICS = SESSION_METRICS.filter(metric => metric.key !== 'postShotMax');
+
 export default defineComponent({
   name: 'SessionListing',
   components: { DataTable, Column },
@@ -16,7 +18,8 @@ export default defineComponent({
     const router = useRouter();
     return {
       router,
-      metricDefinitions: SESSION_METRICS
+      metricDefinitions: SESSION_METRICS,
+      tableMetricDefinitions: TABLE_METRICS
     };
   },
   computed: {
@@ -144,7 +147,7 @@ export default defineComponent({
           </template>
         </Column>
         <Column
-          v-for="metric in metricDefinitions"
+          v-for="metric in tableMetricDefinitions"
           :key="metric.key"
           :header="metric.label"
           :style="{ width: metric.columnWidth || '5.5rem' }"

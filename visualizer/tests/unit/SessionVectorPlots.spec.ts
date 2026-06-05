@@ -4,7 +4,7 @@ import PrimeVue from 'primevue/config';
 import SessionVectorPlots from '../../src/components/SessionVectorPlots';
 
 describe('SessionVectorPlots', () => {
-  it('builds pull and post-shot vector datasets with median vectors', () => {
+  it('builds vector datasets with mean vectors, spread overlays, and target rings', () => {
     const shots = [
       {
         pk: 1,
@@ -51,8 +51,18 @@ describe('SessionVectorPlots', () => {
     expect(wrapper.text()).toContain('Post-shot max excursion vectors');
     const pull = wrapper.vm.charts.find(chart => chart.key === 'pull');
     expect(pull.data.datasets[0].data).toHaveLength(6);
-    expect(pull.data.datasets[1].data).toEqual([{ x: 0, y: 0 }, { x: 4, y: 2 }]);
+    expect(pull.data.datasets[1].label).toBe('Mean vector');
+    expect(pull.data.datasets[1].data[1].x).toBeCloseTo(35.333);
+    expect(pull.data.datasets[1].data[1].y).toBeCloseTo(34);
+    expect(pull.data.datasets[1].data[1].magnitude).toBeCloseTo(Math.hypot(35.3333333333, 34));
+    expect(pull.data.datasets[1].data[1].sdX).toBeGreaterThan(0);
+    expect(pull.data.datasets[2].label).toBe('Mean endpoint ±1 SD');
+    expect(pull.options.plugins.legend.display).toBe(true);
+    expect(pull.plugins.some(plugin => plugin.id === 'equal-aspect-scale')).toBe(true);
+    expect(pull.plugins.some(plugin => plugin.id === 'target-rings')).toBe(true);
+    expect(pull.plugins.some(plugin => plugin.id === 'summary-spread-1')).toBe(true);
     const post = wrapper.vm.charts.find(chart => chart.key === 'postShot');
-    expect(post.data.datasets[1].data).toEqual([{ x: 0, y: 0 }, { x: 2, y: 6 }]);
+    expect(post.data.datasets[1].data[1].x).toBeCloseTo(34);
+    expect(post.data.datasets[1].data[1].y).toBeCloseTo(36.667);
   });
 });

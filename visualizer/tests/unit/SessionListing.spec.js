@@ -88,6 +88,26 @@ describe("SessionListing", () => {
     expect(wrapper.vm.metricValue({}, metricDef)).toBe('—');
   });
 
+  it("uses compact table metrics", () => {
+    const wrapper = mount(SessionListing, {
+      props: { sessions: [], activeSessionPks: [] },
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          DataTable: dataTableStub,
+          Column: columnStub
+        }
+      }
+    });
+    expect(wrapper.vm.tableMetricDefinitions.map(metric => metric.key)).toEqual([
+      'percent10',
+      'hold',
+      'split',
+      'length1s',
+      'deltaPull'
+    ]);
+  });
+
   it("marks active sessions and emits toggle", () => {
     const sessions = [{ date: "2024-01-01", pk: 10, shots: [] }];
     const wrapper = mount(SessionListing, {

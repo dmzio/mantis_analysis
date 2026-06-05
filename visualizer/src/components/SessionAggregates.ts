@@ -474,6 +474,18 @@ export default defineComponent({
     </div>
     <div v-else class="shot-layout">
       <div class="plot-row">
+        <div class="card">
+          <h3>Shot Summary</h3>
+          <table class="stats-table">
+            <tr v-for="row in summaryRows" :key="row.key">
+              <td>{{ row.key }}</td>
+              <td>{{ row.value.mean.toFixed(2) }}</td>
+              <td>± {{ row.value.sd.toFixed(2) }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="plot-row">
         <div class="card"><h4>Absolute deviation</h4><Chart type="line" :data="absDevData" :options="absDevOptions" :plugins="absDevPlugins" /></div>
         <div class="card"><h4>Absolute speed</h4><Chart type="line" :data="absSpeedData" :options="absSpeedOptions" :plugins="absSpeedPlugins" /></div>
       </div>
@@ -511,18 +523,6 @@ export default defineComponent({
             :options="elapsedAimStabilityOptions"
             :plugins="elapsedAimStabilityPlugins"
           />
-        </div>
-      </div>
-      <div class="plot-row">
-        <div class="card">
-          <h3>Shot Summary</h3>
-          <table class="stats-table">
-            <tr v-for="row in summaryRows" :key="row.key">
-              <td>{{ row.key }}</td>
-              <td>{{ row.value.mean.toFixed(2) }}</td>
-              <td>± {{ row.value.sd.toFixed(2) }}</td>
-            </tr>
-          </table>
         </div>
       </div>
     </div>

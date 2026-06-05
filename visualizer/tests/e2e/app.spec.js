@@ -93,7 +93,7 @@ test("dashboard lists sessions", async ({ page }) => {
   const headerRow = page.locator('[data-testid="session-table"] thead tr');
   await expect(headerRow).toContainText('Hold (s)');
   await expect(headerRow).toContainText('Δpull (mm)');
-  await expect(headerRow).toContainText('Post max (mm)');
+  await expect(headerRow).not.toContainText('Post max (mm)');
   const percentCell = page.locator('[data-testid="metric-percent10"]').first();
   await expect(percentCell).toHaveAttribute('title', /median .*IQR/);
   const tableWrapper = page.locator('[data-testid="session-table"]');
@@ -187,11 +187,12 @@ test('[layout] averages tab exposes all plots through vertical scrolling', async
   }));
   expect(scrollState.scrollHeight).toBeGreaterThan(scrollState.clientHeight);
   expect(['auto', 'scroll']).toContain(scrollState.overflowY);
+  await expect(panel.locator('text=Shot Summary')).toBeInViewport();
 
   await panel.evaluate(el => {
     el.scrollTop = el.scrollHeight;
   });
-  await expect(panel.locator('text=Shot Summary')).toBeInViewport();
+  await expect(panel.locator('text=Aiming stability over session time')).toBeInViewport();
 });
 
 test('[layout] dashboard and session pages never scroll sideways', async ({ page }) => {
@@ -246,6 +247,59 @@ test('[layout] session stats keeps horizontal grid without photo', async ({ page
   expect(Math.abs(spreadBox.y - traceBox.y)).toBeLessThan(40);
   expect(traceBox.x).toBeGreaterThan(spreadBox.x + spreadBox.width - 24);
   expect(spreadBox.width).toBeLessThan(wrapBox.width * 0.7);
+});
+
+test('[layout] session stats content scrolls vertically without panel overlap', async ({ page }) => {
+  await page.goto('http://localhost:8765/');
+  await uploadSessions(page, ['11111027.json']);
+  await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
+  await expect(page).toHaveURL(/#\/session\/\d+/);
+
+  const panel = page.locator('.session-view .p-tabview-panel, .session-view .p-tabpanel').filter({ has: page.locator('.session-stats') }).first();
+  await expect(panel.locator('.session-vector-plots')).toBeVisible();
+
+  const layout = await panel.evaluate(el => {
+    const visuals = el.querySelector('.session-stats__visuals');
+    const vectors = el.querySelector('.session-vector-plots');
+    const stats = el.querySelector('.session-stats');
+    if (!visuals || !vectors || !stats) {
+      return null;
+    }
+    const visualsRect = visuals.getBoundingClientRect();
+    const vectorsRect = vectors.getBoundingClientRect();
+    const statsRect = stats.getBoundingClientRect();
+    const statsStyle = getComputedStyle(stats);
+    return {
+      panelClientHeight: el.clientHeight,
+      panelScrollHeight: el.scrollHeight,
+      panelOverflowY: getComputedStyle(el).overflowY,
+      statsOverflowY: statsStyle.overflowY,
+      visualsBottom: visualsRect.bottom,
+      vectorsTop: vectorsRect.top,
+      vectorsLeft: vectorsRect.left,
+      vectorsRight: vectorsRect.right,
+      vectorsBottom: vectorsRect.bottom,
+      statsLeft: statsRect.left,
+      statsRight: statsRect.right,
+      statsBottom: statsRect.bottom
+    };
+  });
+  expect(layout).not.toBeNull();
+  if (!layout) {
+    throw new Error('Failed to measure session stats layout');
+  }
+  expect(layout.panelScrollHeight).toBeGreaterThan(layout.panelClientHeight);
+  expect(['auto', 'scroll']).toContain(layout.panelOverflowY);
+  expect(layout.statsOverflowY).toBe('hidden');
+  expect(layout.vectorsTop).toBeGreaterThanOrEqual(layout.visualsBottom - 1);
+  expect(layout.vectorsLeft).toBeGreaterThanOrEqual(layout.statsLeft - 1);
+  expect(layout.vectorsRight).toBeLessThanOrEqual(layout.statsRight + 1);
+  expect(layout.vectorsBottom).toBeLessThanOrEqual(layout.statsBottom + 1);
+
+  await panel.evaluate(el => {
+    el.scrollTop = el.scrollHeight;
+  });
+  await expect(panel.locator('[data-testid="vector-postShot"]')).toBeInViewport();
 });
 
 test('shot list formats numbers', async ({ page }) => {

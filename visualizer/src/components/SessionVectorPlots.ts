@@ -19,6 +19,15 @@ interface VectorChart {
   plugins: any[];
 }
 
+interface SummaryVector {
+  x: number;
+  y: number;
+  magnitude: number;
+  angleDeg: number | null;
+  sdX: number;
+  sdY: number;
+}
+
 function finiteNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -59,19 +68,127 @@ function vectorPoints(
     .filter((point): point is VectorPoint => point !== null);
 }
 
-function medianVector(points: VectorPoint[]): VectorPoint | null {
-  if (!points.length) return null;
-  const sorted = [...points].sort((a, b) => a.magnitude - b.magnitude);
-  return sorted[Math.floor(sorted.length / 2)];
+function mean(values: number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-function chartLimit(points: VectorPoint[], median: VectorPoint | null): number {
+function standardDeviation(values: number[], avg: number): number {
+  if (values.length < 2) return 0;
+  const variance = values.reduce((sum, value) => sum + (value - avg) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
+function meanVector(points: VectorPoint[]): SummaryVector | null {
+  if (!points.length) return null;
+  const xs = points.map(point => point.x);
+  const ys = points.map(point => point.y);
+  const x = mean(xs);
+  const y = mean(ys);
+  const magnitude = Math.hypot(x, y);
+  return {
+    x,
+    y,
+    magnitude,
+    angleDeg: magnitude > 0 ? (Math.atan2(y, x) * 180) / Math.PI : null,
+    sdX: standardDeviation(xs, x),
+    sdY: standardDeviation(ys, y)
+  };
+}
+
+function chartLimit(points: VectorPoint[], summary: SummaryVector | null): number {
   const max = Math.max(
     10,
     ...points.map(point => Math.max(Math.abs(point.x), Math.abs(point.y))),
-    median ? Math.max(Math.abs(median.x), Math.abs(median.y)) : 0
+    summary ? Math.max(Math.abs(summary.x) + summary.sdX, Math.abs(summary.y) + summary.sdY) : 0
   );
   return Math.ceil(max * 1.2);
+}
+
+function equalAspectScalePlugin(baseLimit: number) {
+  return {
+    id: 'equal-aspect-scale',
+    afterLayout(chart: any) {
+      const { left, right, top, bottom } = chart.chartArea || {};
+      const width = right - left;
+      const height = bottom - top;
+      if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
+      const aspect = width / height;
+      const xLimit = baseLimit * Math.max(1, aspect);
+      const yLimit = baseLimit * Math.max(1, 1 / aspect);
+      const key = `${xLimit.toFixed(3)}:${yLimit.toFixed(3)}`;
+      if (chart.$equalAspectScaleKey === key) return;
+      chart.$equalAspectScaleKey = key;
+      chart.options.scales.x.min = -xLimit;
+      chart.options.scales.x.max = xLimit;
+      chart.options.scales.y.min = -yLimit;
+      chart.options.scales.y.max = yLimit;
+      chart.update('none');
+    }
+  };
+}
+
+function targetRingsPlugin() {
+  return {
+    id: 'target-rings',
+    beforeDatasetsDraw(chart: any) {
+      const xScale = chart.scales?.x;
+      const yScale = chart.scales?.y;
+      if (!xScale || !yScale) return;
+      const ctx = chart.ctx;
+      const { left, right, top, bottom } = chart.chartArea;
+      const centerX = xScale.getPixelForValue(0);
+      const centerY = yScale.getPixelForValue(0);
+      if (centerX < left || centerX > right || centerY < top || centerY > bottom) return;
+      const limit = Math.min(Math.abs(xScale.max || 0), Math.abs(yScale.max || 0));
+      const step = limit > 40 ? 10 : 5;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(150, 160, 200, 0.22)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      for (let radius = step; radius <= limit; radius += step) {
+        const radiusPx = Math.abs(xScale.getPixelForValue(radius) - centerX);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radiusPx, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(212, 218, 239, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(left, centerY);
+      ctx.lineTo(right, centerY);
+      ctx.moveTo(centerX, top);
+      ctx.lineTo(centerX, bottom);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+}
+
+function summarySpreadPlugin(datasetIndex: number, color: string) {
+  return {
+    id: `summary-spread-${datasetIndex}`,
+    beforeDatasetsDraw(chart: any) {
+      const xScale = chart.scales?.x;
+      const yScale = chart.scales?.y;
+      const summary = chart.data?.datasets?.[datasetIndex]?.data?.[1];
+      if (!xScale || !yScale || !summary) return;
+      if (!summary.sdX && !summary.sdY) return;
+      const ctx = chart.ctx;
+      const centerX = xScale.getPixelForValue(summary.x);
+      const centerY = yScale.getPixelForValue(summary.y);
+      const radiusX = Math.max(3, Math.abs(xScale.getPixelForValue(summary.x + summary.sdX) - centerX));
+      const radiusY = Math.max(3, Math.abs(yScale.getPixelForValue(summary.y + summary.sdY) - centerY));
+      ctx.save();
+      ctx.fillStyle = color.replace('1)', '0.06)');
+      ctx.strokeStyle = color.replace('1)', '0.5)');
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
 }
 
 function vectorDrawPlugin(datasetIndex: number, color: string, width: number) {
@@ -112,13 +229,13 @@ function vectorDrawPlugin(datasetIndex: number, color: string, width: number) {
 }
 
 function buildChart(key: string, title: string, points: VectorPoint[], color: string): VectorChart {
-  const median = medianVector(points);
-  const limit = chartLimit(points, median);
+  const summary = meanVector(points);
+  const limit = chartLimit(points, summary);
   const pairData = points.flatMap(point => [
     { x: 0, y: 0, shotIndex: point.shotIndex, shotPk: point.shotPk, score: point.score, magnitude: 0, angleDeg: null },
     point
   ]);
-  const medianData = median ? [{ x: 0, y: 0 }, { x: median.x, y: median.y }] : [];
+  const summaryData = summary ? [{ x: 0, y: 0 }, summary] : [];
   return {
     key,
     title,
@@ -134,12 +251,20 @@ function buildChart(key: string, title: string, points: VectorPoint[], color: st
           showLine: false
         },
         {
-          label: 'Median vector',
-          data: medianData,
+          label: 'Mean vector',
+          data: summaryData,
           borderColor: '#37b24d',
           backgroundColor: '#37b24d',
           pointRadius: 4,
           pointHoverRadius: 5,
+          showLine: false
+        },
+        {
+          label: 'Mean endpoint ±1 SD',
+          data: [],
+          borderColor: 'rgba(55, 178, 77, 0.5)',
+          backgroundColor: 'rgba(55, 178, 77, 0.06)',
+          pointRadius: 0,
           showLine: false
         }
       ]
@@ -161,7 +286,16 @@ function buildChart(key: string, title: string, points: VectorPoint[], color: st
         }
       },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            color: '#d4daef',
+            boxWidth: 16,
+            boxHeight: 8,
+            filter: (item: any) => item.text === 'Mean vector' || item.text === 'Mean endpoint ±1 SD'
+          }
+        },
         tooltip: {
           filter: (item: any) => item.datasetIndex === 0 && item.dataIndex % 2 === 1,
           callbacks: {
@@ -189,6 +323,9 @@ function buildChart(key: string, title: string, points: VectorPoint[], color: st
       }
     },
     plugins: [
+      equalAspectScalePlugin(limit),
+      targetRingsPlugin(),
+      summarySpreadPlugin(1, 'rgba(55, 178, 77, 1)'),
       vectorDrawPlugin(0, color.replace('1)', '0.35)'), 1),
       vectorDrawPlugin(1, '#37b24d', 2)
     ]
