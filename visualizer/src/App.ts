@@ -112,8 +112,15 @@ export default defineComponent({
   },
   template: `
     <div class="app-wrapper">
-      <div v-if="store.loading" class="loading-overlay">
-        <ProgressSpinner style="width:150px;height:150px" />
+      <div v-if="store.loading" class="loading-overlay" data-testid="loading-overlay">
+        <div class="loading-overlay__panel">
+          <ProgressSpinner style="width:96px;height:96px" />
+          <div class="loading-overlay__copy">
+            <strong data-testid="loading-message">{{ loaderMessage }}</strong>
+            <span data-testid="loading-progress">{{ loaderPercent }}%</span>
+          </div>
+          <ProgressBar :value="loaderPercent" class="loading-overlay__progress" />
+        </div>
       </div>
       <div class="topbar" v-if="$route.path !== '/'">
         <Menubar :model="items" class="main-menubar">

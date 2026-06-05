@@ -5,7 +5,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import store from '../store';
-import { getShotByPk, getProcessedShots } from '../sessionData';
+import { getProcessedShotRevision, getShotByPk, getProcessedShots } from '../sessionData';
 import { useCustomIcon } from '../icons';
 
 const PrevIcon = useCustomIcon('navigate_before');
@@ -30,6 +30,7 @@ export default defineComponent({
     const shot = computed(() => {
       const meta = (store.sessions as Record<number, any>)[sessionPk.value];
       void meta?.ready;
+      void getProcessedShotRevision(sessionPk.value);
       return getShotByPk(sessionPk.value, shotPk.value);
     });
     const navigate = (path: string, originalEvent?: Event) => {
@@ -50,6 +51,7 @@ export default defineComponent({
     const shots = computed(() => {
       const meta = (store.sessions as Record<number, any>)[sessionPk.value];
       void meta?.ready;
+      void getProcessedShotRevision(sessionPk.value);
       return getProcessedShots(sessionPk.value);
     });
     const shotIndex = computed(() => shots.value.findIndex(s => s.pk === shotPk.value));

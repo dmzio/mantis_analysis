@@ -90,6 +90,21 @@ if (typeof indexedDB === 'undefined') {
       }, 0);
       return req;
     }
+    get(key: IDBValidKey) {
+      const req = createRequest<any>();
+      setTimeout(() => {
+        fulfill(req, this.store.get(key));
+      }, 0);
+      return req;
+    }
+    delete(key: IDBValidKey) {
+      const req = createRequest<void>();
+      setTimeout(() => {
+        this.store.delete(key);
+        fulfill(req, undefined);
+      }, 0);
+      return req;
+    }
     clear() {
       const req = createRequest<void>();
       setTimeout(() => {

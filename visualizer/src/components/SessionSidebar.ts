@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import BreadCrumb from 'primevue/breadcrumb';
 import SessionShotList from './SessionShotList';
 import store from '../store';
-import { getProcessedShots } from '../sessionData';
+import { getProcessedShotRevision, getProcessedShots } from '../sessionData';
 
 export default defineComponent({
   name: 'SessionSidebar',
@@ -15,6 +15,7 @@ export default defineComponent({
     const shots = computed(() => {
       const meta = store.sessions[sessionPk.value];
       void meta?.ready;
+      void getProcessedShotRevision(sessionPk.value);
       return getProcessedShots(sessionPk.value);
     });
     const items = computed(() => [

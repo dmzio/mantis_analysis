@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import PrimeVue from "primevue/config";
 import router from "../../src/router";
@@ -6,6 +6,11 @@ import store from "../../src/store";
 import SessionView from "../../src/components/SessionView";
 import SessionSidebar from "../../src/components/SessionSidebar";
 import { cacheProcessedShots, clearSessionData } from "../../src/sessionData";
+import * as loader from "../../src/dataLoader";
+
+vi.mock('primevue/chart', () => ({
+  default: { name: 'Chart', template: '<canvas></canvas>' }
+}));
 
 const sampleShot = {
   pk: 11,
@@ -22,6 +27,17 @@ const sampleShot = {
   sample_rate: 1,
   pitch: [0, 0],
   yaw: [0, 0]
+};
+
+const sessionViewStateStubs = {
+  Tabs: { template: '<div><slot /></div>' },
+  TabList: { template: '<div><slot /></div>' },
+  Tab: { template: '<button><slot /></button>' },
+  TabPanels: { template: '<div><slot /></div>' },
+  TabPanel: { template: '<div><slot /></div>' },
+  RawTraceVisualizer: { template: '<svg></svg>' },
+  Chart: { template: '<canvas></canvas>' },
+  DataAccessPrompt: { props: ['message'], template: '<div data-testid="data-access-prompt">{{ message }}</div>' }
 };
 
 function seedStore() {
@@ -43,6 +59,16 @@ beforeEach(() => {
 });
 
 describe("SessionView", () => {
+  let ensureSpy;
+
+  beforeEach(() => {
+    ensureSpy = vi.spyOn(loader, 'ensureSessionData').mockResolvedValue({ status: 'ready', message: '' });
+  });
+
+  afterEach(() => {
+    ensureSpy.mockRestore();
+  });
+
   it("shows stats", async () => {
     await router.push('/session/1');
     const wrapper = mount(SessionView, {
@@ -59,8 +85,9 @@ describe("SessionView", () => {
         }
       }
     });
-    await wrapper.vm.$nextTick();
-    expect(wrapper.find('svg').exists()).toBe(true);
+    await vi.waitFor(() => {
+      expect(wrapper.find('svg').exists()).toBe(true);
+    });
     expect(wrapper.find('img.session-photo').attributes('src')).toBe('/foo.jpg');
   });
 
@@ -111,12 +138,59 @@ describe("SessionView", () => {
   it("shows an error when there is no session data", async () => {
     clearSessionData();
     store.sessions = {};
+    ensureSpy.mockResolvedValue({ status: 'missing-session', message: 'Session data is not available.' });
     await router.push('/session/1');
     const push = vi.fn();
     router.push = push;
-    const wrapper = mount(SessionView, { global: { plugins: [PrimeVue, router] } });
-    await Promise.resolve();
+    const wrapper = mount(SessionView, {
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: sessionViewStateStubs
+      }
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.find('[data-testid="session-error"]').exists()).toBe(true);
+    });
     expect(push).not.toHaveBeenCalled();
-    expect(wrapper.find('[data-testid="session-error"]').exists()).toBe(true);
+  });
+
+  it("shows a loading state while direct session navigation restores data", async () => {
+    clearSessionData();
+    store.sessions = {};
+    ensureSpy.mockReturnValue(new Promise(() => {}));
+    await router.push('/session/1');
+
+    const wrapper = mount(SessionView, {
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: sessionViewStateStubs
+      }
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="session-loading"]').text()).toContain('Loading session');
+    expect(wrapper.find('[data-testid="session-error"]').exists()).toBe(false);
+  });
+
+  it("shows a data access prompt when direct session navigation needs folder access", async () => {
+    clearSessionData();
+    store.sessions = {};
+    ensureSpy.mockResolvedValue({
+      status: 'needs-user-action',
+      message: 'Select the session export folder to continue.'
+    });
+    await router.push('/session/1');
+
+    const wrapper = mount(SessionView, {
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: sessionViewStateStubs
+      }
+    });
+
+    await vi.waitFor(() => {
+      expect(wrapper.find('[data-testid="data-access-prompt"]').exists()).toBe(true);
+    });
+    expect(wrapper.find('[data-testid="data-access-prompt"]').text()).toContain('Select the session export folder');
   });
 });

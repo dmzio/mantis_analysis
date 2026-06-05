@@ -13,9 +13,10 @@ import ProcessedSpeedPlot from './ProcessedSpeedPlot';
 import AbsDeviationPlot from './AbsDeviationPlot';
 import AbsSpeedPlot from './AbsSpeedPlot';
 import RingStabilityPlot from './RingStabilityPlot';
+import DataAccessPrompt from './DataAccessPrompt';
 import store from '../store';
-import { ensureData } from '../dataLoader';
-import { getProcessedShots, getSessionDrift } from '../sessionData';
+import { ensureShotData } from '../dataLoader';
+import { getProcessedShotRevision, getProcessedShots, getSessionDrift } from '../sessionData';
 import { processShot, SessionDriftEstimate, ShotData } from '../shotProcessor';
 import { appSettings, getActiveDriftMode, type DriftMode } from '../appSettings';
 
@@ -44,7 +45,8 @@ export default defineComponent({
     ProcessedSpeedPlot,
     AbsDeviationPlot,
     AbsSpeedPlot,
-    RingStabilityPlot
+    RingStabilityPlot,
+    DataAccessPrompt
   },
   setup() {
     const route = useRoute();
@@ -59,22 +61,30 @@ export default defineComponent({
     const rawProcessed = ref<any>(null);
     const activeTab = ref<ShotTab>(normalizeShotTab(route.query.tab));
     const loadError = ref<string | null>(null);
+    const loadingShot = ref(true);
+    const needsDataAccess = ref(false);
+    const dataAccessMessage = ref('');
+    let loadSeq = 0;
     const shotModeOptions = [
       { label: 'Corrected', value: 'corrected' },
       { label: 'Original', value: 'original' }
     ];
 
     const hydrateShot = () => {
+      void getProcessedShotRevision(sessionPk.value);
       const shotsArr = getProcessedShots(sessionPk.value, shotMode.value);
       if (!shotsArr.length) {
+        if (loadingShot.value) return false;
         loadError.value = 'Shot data is not yet available.';
         return false;
       }
       const found = shotsArr.find((s: any) => s.pk === shotPk.value);
       if (!found) {
+        if (loadingShot.value) return false;
         loadError.value = `Shot ${shotPk.value} is unavailable.`;
         return false;
       }
+      loadingShot.value = false;
       loadError.value = null;
       shot.value = {
         ...found,
@@ -86,21 +96,35 @@ export default defineComponent({
       return true;
     };
 
-    ensureData().then(ok => {
-      if (!ok) {
-        loadError.value = 'Session data is not available.';
+    const loadShot = async () => {
+      const seq = ++loadSeq;
+      loadingShot.value = true;
+      loadError.value = null;
+      needsDataAccess.value = false;
+      const result = await ensureShotData(sessionPk.value, shotPk.value);
+      if (seq !== loadSeq) return;
+      if (result.status === 'needs-user-action') {
+        loadingShot.value = false;
+        needsDataAccess.value = true;
+        dataAccessMessage.value = result.message;
         return;
       }
-      const meta = (store.sessions as Record<number, any>)[sessionPk.value];
-      if (!meta) {
-        loadError.value = 'Session data is not available.';
+      if (result.status !== 'ready') {
+        loadingShot.value = false;
+        loadError.value = result.message || 'Session data is not available.';
         return;
       }
+      loadingShot.value = false;
       hydrateShot();
-    });
+    };
 
     watch(
-      () => [(store.sessions as Record<number, any>)[sessionPk.value]?.ready, shotPk.value, shotMode.value],
+      () => [
+        (store.sessions as Record<number, any>)[sessionPk.value]?.ready,
+        getProcessedShotRevision(sessionPk.value),
+        shotPk.value,
+        shotMode.value
+      ],
       ([ready]) => {
         if (ready) {
           hydrateShot();
@@ -113,7 +137,9 @@ export default defineComponent({
       () => [sessionPk.value, shotPk.value],
       () => {
         shotMode.value = getActiveDriftMode();
-      }
+        void loadShot();
+      },
+      { immediate: true }
     );
 
     watch(() => appSettings.driftCorrection, () => {
@@ -187,12 +213,22 @@ export default defineComponent({
       driftAvailable,
       driftSummary,
       activeTab,
-      loadError
+      loadError,
+      loadingShot,
+      needsDataAccess,
+      dataAccessMessage,
+      loadShot
     };
   },
   template: `
     <div class="session-view">
-      <div v-if="loadError" class="session-view__error" data-testid="shot-error">{{ loadError }}</div>
+      <div v-if="loadingShot" class="session-view__loading" data-testid="shot-loading">Loading shot</div>
+      <DataAccessPrompt
+        v-else-if="needsDataAccess"
+        :message="dataAccessMessage"
+        @loaded="loadShot"
+      />
+      <div v-else-if="loadError" class="session-view__error" data-testid="shot-error">{{ loadError }}</div>
       <Tabs v-else v-model:value="activeTab">
         <TabList>
           <Tab value="track">Track</Tab>

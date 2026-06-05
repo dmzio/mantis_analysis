@@ -9,6 +9,8 @@ describe("AppRoot", () => {
   beforeEach(() => {
     localStorage.clear();
     resetAppSettings();
+    store.loading = false;
+    store.loader = { total: 0, processed: 0, pending: 0, active: false, message: '', currentPk: null, inFlight: 0 };
   });
 
   it("resets data and redirects", async () => {
@@ -46,6 +48,30 @@ describe("AppRoot", () => {
       expect(document.body.classList.contains("p-theme-lara-light-blue")).toBe(true);
       expect(localStorage.getItem("darkMode")).toBe("false");
     });
+  });
+
+  it("shows actual import progress in the loading overlay", () => {
+    store.loading = true;
+    store.loader = {
+      total: 4,
+      processed: 1,
+      pending: 3,
+      active: true,
+      message: "Processing 1/4",
+      currentPk: null,
+      inFlight: 1
+    };
+
+    const wrapper = mount(AppRoot, {
+      global: {
+        stubs: ["router-view", "Menubar", "ToggleSwitch", "SelectButton"],
+        mocks: { $route: { path: '/dashboard' } }
+      }
+    });
+
+    expect(wrapper.find('[data-testid="loading-overlay"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="loading-message"]').text()).toBe("Processing 1/4");
+    expect(wrapper.find('[data-testid="loading-progress"]').text()).toContain("25%");
   });
 
   it("persists and applies trace style selection", async () => {

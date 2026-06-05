@@ -108,10 +108,9 @@ function chartLimit(points: VectorPoint[], summary: SummaryVector | null): numbe
 function equalAspectScalePlugin(baseLimit: number) {
   return {
     id: 'equal-aspect-scale',
-    afterLayout(chart: any) {
-      const { left, right, top, bottom } = chart.chartArea || {};
-      const width = right - left;
-      const height = bottom - top;
+    beforeLayout(chart: any) {
+      const width = chart.width;
+      const height = chart.height;
       if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
       const aspect = width / height;
       const xLimit = baseLimit * Math.max(1, aspect);
@@ -123,7 +122,6 @@ function equalAspectScalePlugin(baseLimit: number) {
       chart.options.scales.x.max = xLimit;
       chart.options.scales.y.min = -yLimit;
       chart.options.scales.y.max = yLimit;
-      chart.update('none');
     }
   };
 }

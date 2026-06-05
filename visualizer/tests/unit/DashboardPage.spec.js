@@ -5,6 +5,7 @@ import router from "../../src/router";
 import DashboardPage from "../../src/components/DashboardPage";
 import SessionListing from "../../src/components/SessionListing";
 import SessionScatterPlots from "../../src/components/SessionScatterPlots";
+import SessionMeanVectorTimeline from "../../src/components/SessionMeanVectorTimeline";
 import * as loader from "../../src/dataLoader";
 import { cacheProcessedShots, clearSessionData } from "../../src/sessionData";
 import { appSettings, resetAppSettings } from "../../src/appSettings";
@@ -33,7 +34,11 @@ const mountOptions = {
   global: {
     plugins: [router],
     provide: { store },
-    stubs: { Button: buttonStub, Chart: { template: "<canvas></canvas>" } }
+    stubs: {
+      Button: buttonStub,
+      Chart: { template: "<canvas></canvas>" },
+      DataAccessPrompt: { props: ['message'], template: '<div data-testid="data-access-prompt">{{ message }}</div>' }
+    }
   }
 };
 
@@ -47,7 +52,7 @@ describe("DashboardPage", () => {
     store.loading = false;
     clearSessionData();
     resetAppSettings();
-    ensureSpy = vi.spyOn(loader, 'ensureData').mockResolvedValue(true);
+    ensureSpy = vi.spyOn(loader, 'ensureDashboardData').mockResolvedValue({ status: 'ready', message: '' });
   });
   afterEach(() => {
     ensureSpy.mockRestore();
@@ -63,6 +68,7 @@ describe("DashboardPage", () => {
     const wrapper = await mount(DashboardPage, mountOptions);
     await flushMounted(wrapper);
     expect(wrapper.findComponent(SessionListing).exists()).toBe(true);
+    expect(wrapper.findComponent(SessionMeanVectorTimeline).exists()).toBe(true);
     expect(wrapper.findComponent(SessionScatterPlots).exists()).toBe(true);
   });
 
@@ -93,17 +99,16 @@ describe("DashboardPage", () => {
     expect(rows[0].pk).toBe(2);
   });
 
-  it("redirects to landing when empty", async () => {
+  it("shows a data access prompt when dashboard data needs folder access", async () => {
     store.sessions = {};
-    const push = vi.fn();
-    const originalPush = router.push;
-    router.push = push;
-    ensureSpy.mockResolvedValue(false);
-    await mount(DashboardPage, mountOptions);
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(push).toHaveBeenCalledWith("/");
-    router.push = originalPush;
+    ensureSpy.mockResolvedValue({
+      status: 'needs-user-action',
+      message: 'Select the session export folder to continue.'
+    });
+    const wrapper = await mount(DashboardPage, mountOptions);
+    await flushMounted(wrapper);
+    expect(wrapper.find('[data-testid="data-access-prompt"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="data-access-prompt"]').text()).toContain('Select the session export folder');
   });
 
   it("computes dashboard metrics when aggregates unavailable", async () => {
@@ -120,6 +125,9 @@ describe("DashboardPage", () => {
     const [session] = listing.props('sessions');
     expect(session.metrics.percent10.mean).toBeCloseTo(70);
     expect(session.metrics.hold.mean).toBeCloseTo(1.25);
+    expect(store.sessions[1].metrics).toBeUndefined();
+    expect(store.sessions[1].metricsByMode).toBeUndefined();
+    expect(store.aggregates[1]).toBeUndefined();
   });
 
   it("uses metrics from the active drift mode", async () => {

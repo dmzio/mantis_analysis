@@ -29,6 +29,18 @@ export interface SessionMetricStats {
   q3: number | null;
 }
 
+export interface MeanPullVectorStats {
+  xMm: number;
+  yMm: number;
+  magnitudeMm: number;
+  angleDeg: number | null;
+  shotCount: number;
+}
+
+export type SessionMetricsResult = Record<string, SessionMetricStats> & {
+  meanPullVector?: MeanPullVectorStats;
+};
+
 /** Describes the default session-level metrics derived from shot data. */
 export const SESSION_METRICS: SessionMetricDefinition[] = [
   {
@@ -89,17 +101,43 @@ export const SESSION_METRICS: SessionMetricDefinition[] = [
   }
 ];
 
+function finiteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/** Compute the resultant mean pull displacement vector from shot-level x/y components. */
+export function computeMeanPullVector(shots: any[]): MeanPullVectorStats | null {
+  const vectors = shots
+    .map(shot => {
+      const x = finiteNumber(shot?.delta_pull_x_mm);
+      const y = finiteNumber(shot?.delta_pull_y_mm);
+      return x === null || y === null ? null : { x, y };
+    })
+    .filter((vector): vector is { x: number; y: number } => vector !== null);
+  if (!vectors.length) return null;
+  const xMm = vectors.reduce((sum, vector) => sum + vector.x, 0) / vectors.length;
+  const yMm = vectors.reduce((sum, vector) => sum + vector.y, 0) / vectors.length;
+  const magnitudeMm = Math.hypot(xMm, yMm);
+  return {
+    xMm,
+    yMm,
+    magnitudeMm,
+    angleDeg: magnitudeMm > 0 ? (Math.atan2(yMm, xMm) * 180) / Math.PI : null,
+    shotCount: vectors.length
+  };
+}
+
 /**
  * Compute per-session mean and standard deviation values for the configured metrics.
  * Scaling is applied before the result is returned so callers can present the values directly.
  */
-export function computeSessionMetrics(shots: any[]): Record<string, SessionMetricStats> {
+export function computeSessionMetrics(shots: any[]): SessionMetricsResult {
   if (!Array.isArray(shots) || !shots.length) {
     return {};
   }
   const fields = SESSION_METRICS.map(metric => metric.field);
   const raw = aggregateFields(shots, fields);
-  const stats: Record<string, SessionMetricStats> = {};
+  const stats: SessionMetricsResult = {};
   SESSION_METRICS.forEach(metric => {
     const entry = raw[metric.field];
     if (!entry) {
@@ -114,6 +152,10 @@ export function computeSessionMetrics(shots: any[]): Record<string, SessionMetri
       q3: entry.q3 * scale
     };
   });
+  const meanPullVector = computeMeanPullVector(shots);
+  if (meanPullVector) {
+    stats.meanPullVector = meanPullVector;
+  }
   return stats;
 }
 

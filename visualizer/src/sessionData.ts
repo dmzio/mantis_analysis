@@ -1,9 +1,10 @@
-import { markRaw } from 'vue';
+import { markRaw, reactive } from 'vue';
 import { getActiveDriftMode, type DriftMode } from './appSettings';
 import type { PreprocessedShot, ProcessedSessionShotVariants, SessionDriftEstimate } from './shotProcessor';
 
 const sessionDetailCache = new Map<number, Record<string, any>>();
 const processedShotCache = new Map<number, ProcessedSessionShotVariants>();
+const processedShotRevisions = reactive<Record<number, number>>({});
 
 export function cacheSessionDetail(session: Record<string, any>): void {
   if (!session?.pk) return;
@@ -38,6 +39,11 @@ export function cacheProcessedShots(
   shots: PreprocessedShot[] | Partial<ProcessedSessionShotVariants>
 ): void {
   processedShotCache.set(pk, markRaw(normalizeProcessedShotVariants(shots)));
+  processedShotRevisions[pk] = (processedShotRevisions[pk] || 0) + 1;
+}
+
+export function getProcessedShotRevision(pk: number): number {
+  return processedShotRevisions[pk] || 0;
 }
 
 export function getProcessedShotVariants(pk: number): ProcessedSessionShotVariants | null {
@@ -60,4 +66,7 @@ export function getShotByPk(sessionPk: number, shotPk: number, mode: DriftMode =
 export function clearSessionData(): void {
   sessionDetailCache.clear();
   processedShotCache.clear();
+  Object.keys(processedShotRevisions).forEach(pk => {
+    delete processedShotRevisions[Number(pk)];
+  });
 }

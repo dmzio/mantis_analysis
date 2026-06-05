@@ -21,9 +21,9 @@ export async function saveHandle(handle: FileSystemDirectoryHandle): Promise<voi
     const db = await open();
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(handle, 'dir');
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
+      const req = tx.objectStore(STORE).put(handle, 'dir');
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
     });
   } catch {
     // ignore
@@ -49,9 +49,9 @@ export async function clearHandle(): Promise<void> {
     const db = await open();
     await new Promise<void>((resolve) => {
       const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).delete('dir');
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
+      const req = tx.objectStore(STORE).delete('dir');
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
     });
   } catch {
     // ignore

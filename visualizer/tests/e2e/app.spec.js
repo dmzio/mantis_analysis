@@ -130,6 +130,8 @@ test("dashboard lists sessions", async ({ page }) => {
   expect(hasHorizontalOverflow).toBe(false);
   const chartCards = page.locator('[data-testid^="chart-"]');
   await expect(chartCards).toHaveCount(6);
+  await expect(page.locator('[data-testid="mean-pull-vector-timeline"]')).toBeVisible();
+  await expect(page.locator('[data-testid="mean-pull-vector-timeline"]')).toContainText('Mean pull vectors');
 
   await expect(page.locator('body')).toHaveClass(/p-dark/);
   await page.locator('[data-testid="theme-toggle"]').click();
@@ -143,6 +145,54 @@ test("dashboard lists sessions", async ({ page }) => {
   await page.locator('ul[role="menubar"] >> text=Reset data').click();
   await expect(page).toHaveURL('http://localhost:8765/#/');
   await expect(page.evaluate(() => localStorage.getItem('data_folder'))).resolves.toBeNull();
+});
+
+test("dashboard session navigation reuses loaded data without a global reload", async ({ page }) => {
+  await page.goto("http://localhost:8765/");
+  await uploadSessions(page, ["11111027.json", "11111942.json"]);
+  await expect(page).toHaveURL(/#\/dashboard$/);
+
+  await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
+  await expect(page).toHaveURL(/#\/session\/\d+$/);
+  await expect(page.locator('[data-testid="loading-overlay"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="session-loading"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="shot-table"] tbody tr')).not.toHaveCount(0);
+  await expect(page.locator('text=Session Stats')).toBeVisible();
+});
+
+test("direct cached session route renders without visiting dashboard first", async ({ page }) => {
+  await page.goto("http://localhost:8765/");
+  await uploadSessions(page, ["11111027.json"]);
+  const sessionHref = await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().getAttribute('href');
+  expect(sessionHref).toBeTruthy();
+
+  const sessionUrl = new URL(sessionHref, page.url()).toString();
+  await page.goto(sessionUrl);
+  await expect(page).toHaveURL(/#\/session\/\d+$/);
+  await expect(page.locator('[data-testid="data-access-prompt"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="shot-table"] tbody tr')).not.toHaveCount(0);
+  await expect(page.locator('[data-testid="vector-pull"]')).toBeVisible();
+});
+
+test("direct session route without cached data shows inline data access prompt", async ({ page }) => {
+  await page.goto("http://localhost:8765/#/session/31183492");
+  await expect(page.locator('[data-testid="data-access-prompt"]')).toBeVisible();
+  await expect(page.locator('[data-testid="data-access-prompt"]')).toContainText('Select');
+  await expect(page).toHaveURL(/#\/session\/31183492$/);
+});
+
+test("direct cached shot route renders after reload", async ({ page }) => {
+  await page.goto("http://localhost:8765/");
+  await uploadSessions(page, ["11111027.json"]);
+  await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
+  await page.locator('[data-testid="shot-table"] tbody tr .session-shotlist__link').first().click();
+  const shotUrl = page.url();
+  expect(shotUrl).toMatch(/#\/session\/\d+\/shot\/\d+/);
+
+  await page.goto(shotUrl);
+  await expect(page.locator('[data-testid="data-access-prompt"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="shot-details"]').first()).toBeVisible();
+  await expect(page.locator('[data-testid="shot-mode-select"]')).toBeVisible();
 });
 
 test("visualizer theming and controls", async ({ page }) => {

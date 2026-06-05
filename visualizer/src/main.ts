@@ -12,17 +12,16 @@ const settings = loadAppSettings();
 document.body.classList.toggle('p-dark', settings.dark);
 document.body.setAttribute('data-theme', settings.dark ? 'lara-dark-blue' : 'lara-light-blue');
 
-(async () => {
-  await hydrateStoreFromCache();
-  const app = createApp(AppRoot);
-  app.use(PrimeVue, {
-    theme: {
-      preset: Lara,
-      options: {
-        darkModeSelector: '.p-dark'
-      }
+void hydrateStoreFromCache();
+
+const app = createApp(AppRoot);
+app.use(PrimeVue, {
+  theme: {
+    preset: Lara,
+    options: {
+      darkModeSelector: '.p-dark'
     }
-  });
-  app.use(router);
-  app.mount('#app');
-})();
+  }
+});
+app.use(router);
+app.mount('#app');

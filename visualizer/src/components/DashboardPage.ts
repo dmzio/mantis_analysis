@@ -2,11 +2,12 @@ import { defineComponent } from 'vue';
 import Button from 'primevue/button';
 import { formatDate } from '../dateFmt';
 import store from '../store';
-import router from '../router';
-import { ensureData } from '../dataLoader';
+import { ensureDashboardData } from '../dataLoader';
 import SessionListing from './SessionListing';
 import SessionScatterPlots from './SessionScatterPlots';
-import { computeSessionMetrics, SESSION_METRICS } from '../sessionMetrics';
+import SessionMeanVectorTimeline from './SessionMeanVectorTimeline';
+import DataAccessPrompt from './DataAccessPrompt';
+import { computeMeanPullVector, computeSessionMetrics, SESSION_METRICS } from '../sessionMetrics';
 import { getProcessedShots } from '../sessionData';
 import { formatSessionDuration } from '../durationFmt';
 import { perfNow, recordPerf } from '../perfMetrics';
@@ -27,14 +28,9 @@ const DATE_FILTER_PRESETS: DateFilterPreset[] = [
 
 export default defineComponent({
   name: 'DashboardPage',
-  components: { SessionListing, SessionScatterPlots, Button },
+  components: { SessionListing, SessionScatterPlots, SessionMeanVectorTimeline, DataAccessPrompt, Button },
   async mounted() {
-    const ok = await ensureData();
-    if (!ok) {
-      router.push('/');
-      return;
-    }
-    this.ensureActiveSessions();
+    await this.loadDashboard();
   },
   data() {
     return {
@@ -42,7 +38,11 @@ export default defineComponent({
       activeSessionMap: {} as Record<number, boolean>,
       filters: DATE_FILTER_PRESETS,
       filterInitialized: false,
-      autoFilterEnabled: true
+      autoFilterEnabled: true,
+      loadingDashboard: true,
+      needsDataAccess: false,
+      dataAccessMessage: '',
+      loadError: ''
     };
   },
   watch: {
@@ -87,7 +87,17 @@ export default defineComponent({
           />
         </section>
         <section class="dashboard-page__charts">
-          <SessionScatterPlots v-if="chartsReady" :sessions="activeSessions" />
+          <div v-if="loadingDashboard" class="session-view__loading" data-testid="dashboard-loading">Loading dashboard</div>
+          <DataAccessPrompt
+            v-else-if="needsDataAccess"
+            :message="dataAccessMessage"
+            @loaded="loadDashboard"
+          />
+          <div v-else-if="loadError" class="session-view__error" data-testid="dashboard-error">{{ loadError }}</div>
+          <template v-else-if="chartsReady">
+            <SessionMeanVectorTimeline :sessions="activeSessions" />
+            <SessionScatterPlots :sessions="activeSessions" />
+          </template>
         </section>
       </div>
     `,
@@ -145,18 +155,15 @@ export default defineComponent({
             const processedShots = getProcessedShots(s.pk, mode);
             if (processedShots.length) {
               metricStats = computeSessionMetrics(processedShots);
-              store.sessions[s.pk].metrics = {
-                ...metricStats
-              };
-              store.sessions[s.pk].metricsByMode = {
-                ...(store.sessions[s.pk].metricsByMode || {}),
-                [mode]: metricStats
-              };
-              store.aggregates[s.pk] = store.aggregates[s.pk] || { stats: s.statsSummary || {}, metrics: {} };
-              store.aggregates[s.pk].metrics = { ...metricStats };
-              store.aggregates[s.pk].metricsByMode = {
-                ...(store.aggregates[s.pk].metricsByMode || {}),
-                [mode]: metricStats
+            }
+          }
+          if (s.ready && !metricStats?.meanPullVector) {
+            const processedShots = getProcessedShots(s.pk, mode);
+            const meanPullVector = computeMeanPullVector(processedShots);
+            if (meanPullVector) {
+              metricStats = {
+                ...metricStats,
+                meanPullVector
               };
             }
           }
@@ -187,7 +194,8 @@ export default defineComponent({
             firearm_label: firearm,
             avg_score: avgScore,
             duration_label: durationLabel,
-            metrics
+            metrics,
+            meanPullVector: metricStats?.meanPullVector ?? null
           };
         });
       } finally {
@@ -196,6 +204,23 @@ export default defineComponent({
     }
   },
   methods: {
+    async loadDashboard() {
+      this.loadingDashboard = true;
+      this.needsDataAccess = false;
+      this.loadError = '';
+      const result = await ensureDashboardData();
+      this.loadingDashboard = false;
+      if (result.status === 'needs-user-action') {
+        this.needsDataAccess = true;
+        this.dataAccessMessage = result.message;
+        return;
+      }
+      if (result.status !== 'ready') {
+        this.loadError = result.message || 'Dashboard data is not available.';
+        return;
+      }
+      this.ensureActiveSessions();
+    },
     setDateFilter(key: string) {
       if (this.dateFilter === key) {
         this.applyDateFilter(key);

@@ -89,8 +89,34 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.4);
+  background: var(--surface-ground);
   z-index: 2000;
+}
+
+.loading-overlay__panel {
+  width: min(420px, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2rem;
+  color: var(--text-color);
+}
+
+.loading-overlay__copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.loading-overlay__copy strong {
+  font-size: 1.125rem;
+}
+
+.loading-overlay__progress {
+  width: 100%;
 }
 
 #app {
@@ -166,6 +192,35 @@ body {
   background: var(--surface-section);
   border: 1px solid var(--surface-border);
   color: var(--text-color);
+}
+
+.session-view__loading {
+  height: 100%;
+  min-height: 16rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--text-color) 68%, transparent);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.data-access-prompt {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  min-width: 0;
+  margin: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  background: var(--surface-section);
+  color: var(--text-color);
+}
+
+.data-access-prompt p {
+  margin: 0;
+  color: color-mix(in srgb, var(--text-color) 72%, transparent);
 }
 
 .session-sidebar-content .card .p-datatable {
@@ -1357,6 +1412,60 @@ header {
   min-height: 0;
   height: 100%;
   padding: 0.15rem 0.25rem 0.25rem;
+}
+
+.session-mean-vector-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: clamp(11rem, 20vh, 15rem);
+  padding: 0.9rem 1rem 0.75rem;
+  margin-bottom: 1px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.session-mean-vector-timeline__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-mean-vector-timeline__header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.session-mean-vector-timeline__scale {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text-color) 62%, transparent);
+  white-space: nowrap;
+}
+
+.session-mean-vector-timeline__chart {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.session-mean-vector-timeline__chart .p-chart {
+  height: 100%;
+}
+
+.session-mean-vector-timeline__empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  color: color-mix(in srgb, var(--text-color) 62%, transparent);
+  font-size: 0.9rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-900) 92%, transparent);
 }
 
 .session-scatter-plots__chart h4 {
