@@ -90,4 +90,61 @@ describe('SessionScatterPlots', () => {
     expect(charts[0].fullLabels).toBe(charts[1].fullLabels);
     expect(charts[0].options.scales.y.title.text).toBe('% in 10');
   });
+
+  it('attaches mean pull vectors to delta pull points', () => {
+    const sessions = [
+      makeSession(1, '2024-01-01', {
+        deltaPull: { mean: 4, sd: 0.5, median: 4.2, q1: 3.8, q3: 4.7 }
+      }),
+      makeSession(2, '2024-01-02', {
+        deltaPull: { mean: 8, sd: 0.5, median: 8.1, q1: 7.8, q3: 8.6 }
+      })
+    ];
+    sessions[0].meanPullVector = { xMm: 3, yMm: 4, magnitudeMm: 5, angleDeg: 53.13, shotCount: 10 };
+    sessions[1].meanPullVector = { xMm: -2, yMm: 0, magnitudeMm: 2, angleDeg: 180, shotCount: 8 };
+
+    const wrapper = mount(SessionScatterPlots, {
+      props: { sessions },
+      global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
+    });
+
+    const deltaChart = wrapper.vm.charts.find(c => c.key === 'deltaPull');
+    expect(deltaChart.vectorItems).toHaveLength(2);
+    expect(deltaChart.vectorItems[0]).toMatchObject({
+      pk: 1,
+      xMm: 3,
+      yMm: 4,
+      magnitudeMm: 5,
+      value: 4.2
+    });
+    expect(deltaChart.plugins.some(plugin => plugin.id === 'delta-pull-vector-overlay')).toBe(true);
+    expect(deltaChart.options.plugins.tooltip.callbacks.afterLabel({ dataIndex: 0 })).toEqual([
+      'Mean pull vector: 5.0 mm',
+      'X/Y: 3.0 / 4.0 mm',
+      'Angle: 53°',
+      'Vector shots: 10'
+    ]);
+  });
+
+  it('uses padded metric ranges for selected dashboard values', () => {
+    const sessions = [
+      makeSession(1, '2024-01-01', {
+        percent10: { mean: 4, sd: 0.5, median: 4, q1: 3.5, q3: 4.5 }
+      }),
+      makeSession(2, '2024-01-02', {
+        percent10: { mean: 7, sd: 0.5, median: 7, q1: 6.5, q3: 7.5 }
+      })
+    ];
+
+    const wrapper = mount(SessionScatterPlots, {
+      props: { sessions },
+      global: { plugins: [PrimeVue], stubs: { Chart: { template: '<canvas></canvas>' } } }
+    });
+    const percentChart = wrapper.vm.charts.find(c => c.key === 'percent10');
+
+    expect(percentChart.options.scales.y.min).toBeGreaterThanOrEqual(0);
+    expect(percentChart.options.scales.y.min).toBeLessThan(3.5);
+    expect(percentChart.options.scales.y.max).toBeGreaterThan(7.5);
+    expect(percentChart.options.scales.y.max).toBeLessThan(100);
+  });
 });

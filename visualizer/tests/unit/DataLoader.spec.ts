@@ -272,6 +272,18 @@ describe('loadFromHandle', () => {
     store.folder = 'sessions';
     const fh1 = makeFileHandle(1, [{ pk: 11, pitch: [0, 0.1], yaw: [0, 0.1], shot_index: 1 }]);
     const fh2 = makeFileHandle(2, [{ pk: 21, pitch: [0, 0.2], yaw: [0, 0.2], shot_index: 1 }]);
+    const photoFile = {
+      name: '2.png',
+      arrayBuffer: vi.fn(),
+      stream: vi.fn(),
+      text: vi.fn(),
+      type: 'image/png'
+    };
+    const photoHandle = {
+      kind: 'file',
+      name: '2.png',
+      getFile: vi.fn(() => Promise.resolve(photoFile as unknown as File))
+    };
     const handle = {
       name: 'sessions',
       queryPermission: vi.fn(() => Promise.resolve('granted')),
@@ -279,7 +291,16 @@ describe('loadFromHandle', () => {
         yield fh1;
         yield fh2;
       },
-      getDirectoryHandle: vi.fn()
+      async getDirectoryHandle(name: string) {
+        if (name === 'session_photo') {
+          return {
+            async *values() {
+              yield photoHandle;
+            }
+          };
+        }
+        throw new Error('missing');
+      }
     };
     vi.mocked(getHandle).mockResolvedValue(handle as any);
 
@@ -291,6 +312,55 @@ describe('loadFromHandle', () => {
     expect(getProcessedShots(1)).toHaveLength(0);
     expect(fh1.getFile).not.toHaveBeenCalled();
     expect(fh2.getFile).toHaveBeenCalled();
+    expect(photoHandle.getFile).toHaveBeenCalled();
+    expect(store.photos[2]).toBeDefined();
+  });
+
+  it('loads a cached session photo from the saved folder handle without restoring the full dashboard', async () => {
+    await replaceCachedData(
+      [{ pk: 4, meta: { pk: 4, ready: true, shot_count: 1 } }],
+      [{ pk: 4, shots: { original: [{ pk: 41, pitch: [0], yaw: [0] }], corrected: [{ pk: 41, pitch: [0], yaw: [0] }], drift: null } }]
+    );
+    store.folder = 'sessions';
+    const photoHandle = {
+      kind: 'file',
+      name: '4.png',
+      getFile: vi.fn(() =>
+        Promise.resolve({
+          name: '4.png',
+          arrayBuffer: vi.fn(),
+          stream: vi.fn(),
+          text: vi.fn(),
+          type: 'image/png'
+        } as unknown as File)
+      )
+    };
+    const handle = {
+      name: 'sessions',
+      queryPermission: vi.fn(() => Promise.resolve('granted')),
+      async *values() {
+        throw new Error('session JSON should not be scanned');
+      },
+      async getDirectoryHandle(name: string) {
+        if (name === 'session_photo') {
+          return {
+            async *values() {
+              yield photoHandle;
+            }
+          };
+        }
+        throw new Error('missing');
+      }
+    };
+    vi.mocked(getHandle).mockResolvedValue(handle as any);
+
+    const result = await ensureSessionData(4);
+
+    expect(result.status).toBe('ready');
+    expect(Object.keys(store.sessions)).toEqual(['4']);
+    expect(getProcessedShots(4)).toHaveLength(1);
+    expect(photoHandle.getFile).toHaveBeenCalled();
+    expect(store.photos[4]).toBeDefined();
   });
 
   it('reports that direct session navigation needs user action when cache and permission are missing', async () => {

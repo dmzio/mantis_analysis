@@ -125,4 +125,67 @@ describe("SessionListing", () => {
     expect(wrapper.emitted('toggle-session')).toBeTruthy();
   });
 
+  it("positions the preview popover to the right of the trigger", () => {
+    const wrapper = mount(SessionListing, {
+      props: { sessions: [], activeSessionPks: [] },
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          DataTable: dataTableStub,
+          Column: columnStub
+        }
+      }
+    });
+    const trigger = document.createElement('span');
+    trigger.getBoundingClientRect = () => ({
+      left: 40,
+      right: 140,
+      top: 100,
+      bottom: 120,
+      width: 100,
+      height: 20,
+      x: 40,
+      y: 100,
+      toJSON: () => ({})
+    });
+    const container = document.createElement('div');
+    container.classList.add('p-popover-flipped');
+    container.setAttribute('data-p-popover-flipped', 'true');
+    container.getBoundingClientRect = () => ({
+      left: 0,
+      right: 300,
+      top: 0,
+      bottom: 180,
+      width: 300,
+      height: 180,
+      x: 0,
+      y: 0,
+      toJSON: () => ({})
+    });
+    wrapper.vm.alignPreviewToRight({ currentTarget: trigger }, container);
+
+    expect(container.style.left).toBe('154px');
+    expect(container.hasAttribute('data-p-popover-flipped')).toBe(false);
+    expect(container.classList.contains('p-popover-flipped')).toBe(false);
+  });
+
+  it("does not show hover previews on mobile width", () => {
+    const wrapper = mount(SessionListing, {
+      props: { sessions: [], activeSessionPks: [] },
+      global: {
+        plugins: [PrimeVue, router],
+        stubs: {
+          DataTable: dataTableStub,
+          Column: columnStub
+        }
+      }
+    });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 430 });
+
+    expect(wrapper.vm.shouldShowPreview(new Event('mouseenter'))).toBe(false);
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
 });

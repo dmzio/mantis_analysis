@@ -5,7 +5,6 @@ import store from '../store';
 import { ensureDashboardData } from '../dataLoader';
 import SessionListing from './SessionListing';
 import SessionScatterPlots from './SessionScatterPlots';
-import SessionMeanVectorTimeline from './SessionMeanVectorTimeline';
 import DataAccessPrompt from './DataAccessPrompt';
 import { computeMeanPullVector, computeSessionMetrics, SESSION_METRICS } from '../sessionMetrics';
 import { getProcessedShots } from '../sessionData';
@@ -28,7 +27,7 @@ const DATE_FILTER_PRESETS: DateFilterPreset[] = [
 
 export default defineComponent({
   name: 'DashboardPage',
-  components: { SessionListing, SessionScatterPlots, SessionMeanVectorTimeline, DataAccessPrompt, Button },
+  components: { SessionListing, SessionScatterPlots, DataAccessPrompt, Button },
   async mounted() {
     await this.loadDashboard();
   },
@@ -83,6 +82,7 @@ export default defineComponent({
           <SessionListing
             :sessions="sessionList"
             :activeSessionPks="activeSessionIds"
+            :photos="store.photos"
             @toggle-session="toggleSessionActivity"
           />
         </section>
@@ -94,10 +94,7 @@ export default defineComponent({
             @loaded="loadDashboard"
           />
           <div v-else-if="loadError" class="session-view__error" data-testid="dashboard-error">{{ loadError }}</div>
-          <template v-else-if="chartsReady">
-            <SessionMeanVectorTimeline :sessions="activeSessions" />
-            <SessionScatterPlots :sessions="activeSessions" />
-          </template>
+          <SessionScatterPlots v-else-if="chartsReady" :sessions="activeSessions" />
         </section>
       </div>
     `,

@@ -189,6 +189,22 @@ function resetPhotos() {
   store.photos = {};
 }
 
+function photoSessionPk(name: string): number | null {
+  const match = /^([0-9]+)/.exec(name);
+  return match ? Number(match[1]) : null;
+}
+
+function setPhotoUrl(pk: number, file: File) {
+  const current = store.photos[pk];
+  if (current) {
+    URL.revokeObjectURL(current);
+  }
+  store.photos = {
+    ...store.photos,
+    [pk]: URL.createObjectURL(file)
+  };
+}
+
 async function loadPhotos(handle: FileSystemDirectoryHandle | null) {
   if (!handle?.getDirectoryHandle) return;
   const photoStart = perfNow();
@@ -197,9 +213,8 @@ async function loadPhotos(handle: FileSystemDirectoryHandle | null) {
     const photoDir = await handle.getDirectoryHandle('session_photo');
     for await (const entry of photoDir.values()) {
       if (entry.kind !== 'file') continue;
-      const match = /^([0-9]+)/.exec(entry.name);
-      if (!match) continue;
-      const sid = Number(match[1]);
+      const sid = photoSessionPk(entry.name);
+      if (sid === null) continue;
       try {
         const file = await (entry as FileSystemFileHandle).getFile();
         next[sid] = URL.createObjectURL(file);
@@ -214,6 +229,26 @@ async function loadPhotos(handle: FileSystemDirectoryHandle | null) {
     store.photos = next;
     recordPerf('loader:photos', perfNow() - photoStart, { photos: Object.keys(next).length });
   }
+}
+
+export async function ensureSessionPhoto(pk: number): Promise<string | null> {
+  if (store.photos[pk]) return store.photos[pk];
+  const handle = await getReadableSavedHandle();
+  if (!handle?.getDirectoryHandle) return null;
+  try {
+    const photoDir = await handle.getDirectoryHandle('session_photo');
+    for await (const entry of photoDir.values()) {
+      if (entry.kind !== 'file') continue;
+      if (photoSessionPk(entry.name) !== pk) continue;
+      const file = await (entry as FileSystemFileHandle).getFile();
+      setPhotoUrl(pk, file);
+      recordPerf('loader:sessionPhoto', 0, { pk });
+      return store.photos[pk] || null;
+    }
+  } catch {
+    // optional directory or unavailable handle
+  }
+  return null;
 }
 
 function resetStoreForLoad(total: number) {
@@ -598,8 +633,14 @@ export async function ensureDashboardData(): Promise<DataLoadResult> {
 }
 
 export async function ensureSessionData(pk: number): Promise<DataLoadResult> {
-  if (hasSessionShots(pk)) return readyResult();
-  if (await restoreCachedSession(pk)) return readyResult();
+  if (hasSessionShots(pk)) {
+    await ensureSessionPhoto(pk);
+    return readyResult();
+  }
+  if (await restoreCachedSession(pk)) {
+    await ensureSessionPhoto(pk);
+    return readyResult();
+  }
   if (!store.folder) return needsUserActionResult();
   store.loader = {
     total: 1,
@@ -629,6 +670,7 @@ export async function ensureSessionData(pk: number): Promise<DataLoadResult> {
     if (meta && shots) {
       await upsertCachedSession({ pk, meta }, { pk, shots }, store.folder);
     }
+    await ensureSessionPhoto(pk);
     store.loader.processed = 1;
     updateLoading(1);
     stopLoading();

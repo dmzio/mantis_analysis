@@ -1,14 +1,22 @@
 import { defineComponent, computed } from 'vue';
 import Chart from 'primevue/chart';
 import { formatDate, formatDateShort } from '../dateFmt';
-import { SESSION_METRICS, SessionMetricDefinition } from '../sessionMetrics';
+import { MeanPullVectorStats, SESSION_METRICS, SessionMetricDefinition } from '../sessionMetrics';
 import { perfNow, recordPerf } from '../perfMetrics';
+
+interface VectorItem extends MeanPullVectorStats {
+  pk: number;
+  value: number;
+  dataIndex: number;
+}
 
 interface ChartBuildResult {
   key: string;
   label: string;
   data: any;
   options: any;
+  plugins: any[];
+  vectorItems: VectorItem[];
   yLabel: string;
   fullLabels: string[];
   means: (number | null)[];
@@ -23,6 +31,97 @@ interface ChartBase {
   sorted: any[];
   labels: string[];
   fullLabels: string[];
+}
+
+function finiteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function finiteVector(session: any): MeanPullVectorStats | null {
+  const vector = session?.meanPullVector;
+  if (!vector) return null;
+  const xMm = finiteNumber(vector.xMm);
+  const yMm = finiteNumber(vector.yMm);
+  const magnitudeMm = finiteNumber(vector.magnitudeMm) ?? (xMm !== null && yMm !== null ? Math.hypot(xMm, yMm) : null);
+  const shotCount = finiteNumber(vector.shotCount);
+  if (xMm === null || yMm === null || magnitudeMm === null || shotCount === null || shotCount <= 0) return null;
+  return {
+    xMm,
+    yMm,
+    magnitudeMm,
+    angleDeg: finiteNumber(vector.angleDeg),
+    shotCount
+  };
+}
+
+function paddedRange(metric: SessionMetricDefinition, values: (number | null)[]) {
+  const finiteValues = values.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+  if (!finiteValues.length) {
+    return {
+      min: metric.min ?? undefined,
+      max: metric.max ?? undefined
+    };
+  }
+  const rawMin = Math.min(...finiteValues);
+  const rawMax = Math.max(...finiteValues);
+  const spread = rawMax - rawMin;
+  const pad = spread > 0 ? spread * 0.18 : Math.max(1, Math.abs(rawMax) * 0.1);
+  const min = metric.min == null ? rawMin - pad : Math.max(metric.min, rawMin - pad);
+  const max = metric.max == null ? rawMax + pad : Math.min(metric.max, rawMax + pad);
+  return {
+    min,
+    max: max <= min ? min + Math.max(1, pad) : max
+  };
+}
+
+function buildVectorOverlayPlugin(items: VectorItem[]) {
+  return {
+    id: 'delta-pull-vector-overlay',
+    afterDatasetsDraw(chart: any) {
+      if (!items.length) return;
+      const meta = chart.getDatasetMeta(2);
+      const points = meta?.data || [];
+      const area = chart.chartArea;
+      if (!points.length || !area) return;
+      const ctx = chart.ctx;
+      const maxMagnitude = Math.max(...items.map(item => item.magnitudeMm), 1);
+      const maxArrowPx = Math.max(16, Math.min(44, ((area.right - area.left) / Math.max(points.length, 4)) * 0.58));
+      const pxPerMm = maxArrowPx / maxMagnitude;
+      const activeIndex = chart.tooltip?.dataPoints?.[0]?.dataIndex;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(area.left, area.top, area.right - area.left, area.bottom - area.top);
+      ctx.clip();
+      items.forEach(item => {
+        const point = points[item.dataIndex];
+        if (!point || point.skip) return;
+        const startX = point.x;
+        const startY = point.y;
+        const endX = startX + item.xMm * pxPerMm;
+        const endY = startY - item.yMm * pxPerMm;
+        const active = item.dataIndex === activeIndex;
+        ctx.globalAlpha = active ? 0.95 : 0.34;
+        ctx.strokeStyle = '#f9dc5c';
+        ctx.fillStyle = '#f9dc5c';
+        ctx.lineWidth = active ? 2.2 : 1.35;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        const angle = Math.atan2(endY - startY, endX - startX);
+        const head = active ? 7 : 5;
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - head * Math.cos(angle - Math.PI / 6), endY - head * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(endX - head * Math.cos(angle + Math.PI / 6), endY - head * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+  };
 }
 
 /**
@@ -57,7 +156,8 @@ export default defineComponent({
       return { sorted, labels, fullLabels };
     }
 
-    function buildOptions(chartDef: ChartBuildResult) {
+    function buildOptions(chartDef: ChartBuildResult, rangeValues: (number | null)[]) {
+      const range = paddedRange(chartDef.metric, rangeValues);
       return {
         responsive: true,
         maintainAspectRatio: false,
@@ -88,8 +188,8 @@ export default defineComponent({
             grid: {
               color: gridColor
             },
-            min: chartDef.metric.min ?? undefined,
-            max: chartDef.metric.max ?? undefined
+            min: range.min,
+            max: range.max
           }
         },
         plugins: {
@@ -125,6 +225,20 @@ export default defineComponent({
                   return `${chartDef.metric.label}: mean ${meanStr} ± ${sdStr}`;
                 }
                 return `${chartDef.metric.label}: ${valueStr}`;
+              },
+              afterLabel: (context: any) => {
+                if (chartDef.key !== 'deltaPull') return [];
+                const item = chartDef.vectorItems.find(vector => vector.dataIndex === context.dataIndex);
+                if (!item) return [];
+                const labels = [
+                  `Mean pull vector: ${item.magnitudeMm.toFixed(1)} mm`,
+                  `X/Y: ${item.xMm.toFixed(1)} / ${item.yMm.toFixed(1)} mm`
+                ];
+                if (item.angleDeg !== null) {
+                  labels.push(`Angle: ${Math.round(item.angleDeg)}°`);
+                }
+                labels.push(`Vector shots: ${item.shotCount}`);
+                return labels;
               }
             }
           }
@@ -169,11 +283,26 @@ export default defineComponent({
       });
 
       const bandColor = 'rgba(55, 178, 77, 0.18)';
+      const vectorItems = metric.key === 'deltaPull'
+        ? base.sorted.map((session: any, index) => {
+            const vector = finiteVector(session);
+            const value = medianValues[index];
+            if (!vector || value === null) return null;
+            return {
+              ...vector,
+              pk: session.pk,
+              value,
+              dataIndex: index
+            };
+          }).filter((item): item is VectorItem => item !== null)
+        : [];
 
       const chartDef: ChartBuildResult = {
         key: metric.key,
         label: metric.label,
         yLabel: metric.axisLabel,
+        plugins: [],
+        vectorItems,
         fullLabels: base.fullLabels,
         means: meanValues,
         sds: sdValues,
@@ -218,7 +347,8 @@ export default defineComponent({
         },
         options: null
       };
-      chartDef.options = buildOptions(chartDef);
+      chartDef.plugins = vectorItems.length ? [buildVectorOverlayPlugin(vectorItems)] : [];
+      chartDef.options = buildOptions(chartDef, [...upper, ...lower, ...medianValues]);
       return chartDef;
     }
 
@@ -246,7 +376,7 @@ export default defineComponent({
         :data-testid="'chart-' + chart.key"
       >
         <h4>{{ chart.label }}</h4>
-        <Chart type="line" :data="chart.data" :options="chart.options" />
+        <Chart type="line" :data="chart.data" :options="chart.options" :plugins="chart.plugins" />
       </div>
     </div>
   `

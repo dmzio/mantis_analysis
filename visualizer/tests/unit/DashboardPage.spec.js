@@ -5,7 +5,6 @@ import router from "../../src/router";
 import DashboardPage from "../../src/components/DashboardPage";
 import SessionListing from "../../src/components/SessionListing";
 import SessionScatterPlots from "../../src/components/SessionScatterPlots";
-import SessionMeanVectorTimeline from "../../src/components/SessionMeanVectorTimeline";
 import * as loader from "../../src/dataLoader";
 import { cacheProcessedShots, clearSessionData } from "../../src/sessionData";
 import { appSettings, resetAppSettings } from "../../src/appSettings";
@@ -68,7 +67,6 @@ describe("DashboardPage", () => {
     const wrapper = await mount(DashboardPage, mountOptions);
     await flushMounted(wrapper);
     expect(wrapper.findComponent(SessionListing).exists()).toBe(true);
-    expect(wrapper.findComponent(SessionMeanVectorTimeline).exists()).toBe(true);
     expect(wrapper.findComponent(SessionScatterPlots).exists()).toBe(true);
   });
 

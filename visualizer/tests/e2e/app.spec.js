@@ -130,8 +130,14 @@ test("dashboard lists sessions", async ({ page }) => {
   expect(hasHorizontalOverflow).toBe(false);
   const chartCards = page.locator('[data-testid^="chart-"]');
   await expect(chartCards).toHaveCount(6);
-  await expect(page.locator('[data-testid="mean-pull-vector-timeline"]')).toBeVisible();
-  await expect(page.locator('[data-testid="mean-pull-vector-timeline"]')).toContainText('Mean pull vectors');
+  await expect(page.locator('[data-testid="mean-pull-vector-timeline"]')).toHaveCount(0);
+  await expect(page.locator('[data-testid="chart-deltaPull"]')).toBeVisible();
+
+  await rows.nth(0).locator('.session-listing__link--date').hover();
+  const preview = page.locator('[data-testid="session-preview-card"]');
+  await expect(preview).toBeVisible();
+  await expect(preview).toContainText(/ISSF Open Training|Open Training/);
+  await expect(preview).toContainText(/shots/);
 
   await expect(page.locator('body')).toHaveClass(/p-dark/);
   await page.locator('[data-testid="theme-toggle"]').click();
