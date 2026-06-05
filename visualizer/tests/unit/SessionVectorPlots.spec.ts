@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PrimeVue from 'primevue/config';
 import SessionVectorPlots from '../../src/components/SessionVectorPlots';
+import { RING_RADII_MM } from '../../src/shotProcessor';
 
 describe('SessionVectorPlots', () => {
   it('builds vector datasets with mean vectors, spread overlays, and target rings', () => {
@@ -59,7 +60,10 @@ describe('SessionVectorPlots', () => {
     expect(pull.data.datasets[2].label).toBe('Mean endpoint ±1 SD');
     expect(pull.options.plugins.legend.display).toBe(true);
     expect(pull.plugins.some(plugin => plugin.id === 'equal-aspect-scale')).toBe(true);
-    expect(pull.plugins.some(plugin => plugin.id === 'target-rings')).toBe(true);
+    const targetRings = pull.plugins.find(plugin => plugin.id === 'target-rings');
+    expect(targetRings?.targetRingRadiiMm).toEqual(RING_RADII_MM);
+    expect(pull.options.scales.x.max).toBeLessThan(RING_RADII_MM[RING_RADII_MM.length - 1] * 2);
+    expect(pull.options.scales.y.max).toBeLessThan(RING_RADII_MM[RING_RADII_MM.length - 1] * 2);
     expect(pull.plugins.some(plugin => plugin.id === 'summary-spread-1')).toBe(true);
     const post = wrapper.vm.charts.find(chart => chart.key === 'postShot');
     expect(post.data.datasets[1].data[1].x).toBeCloseTo(34);

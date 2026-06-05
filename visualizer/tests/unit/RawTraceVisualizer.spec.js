@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PrimeVue from 'primevue/config';
-import RawTraceVisualizer from '../../src/components/RawTraceVisualizer';
+import RawTraceVisualizer, { resolveTraceRenderSettings } from '../../src/components/RawTraceVisualizer';
 import { setActiveTraceStyle } from '../../src/traceStyles';
 
 beforeEach(() => {
@@ -13,6 +13,34 @@ afterEach(() => {
 });
 
 describe('RawTraceVisualizer', () => {
+  it('uses density render settings for many-shot sessions', () => {
+    const detail = resolveTraceRenderSettings(8, 'detail');
+    expect(detail.mode).toBe('detail');
+    expect(detail.holdAlpha).toBe(1);
+    expect(detail.pointRadius).toBeGreaterThan(0);
+    expect(detail.showPullMarkers).toBe(true);
+    expect(detail.showShotMarkers).toBe(true);
+
+    const autoSmall = resolveTraceRenderSettings(8, 'density');
+    expect(autoSmall.mode).toBe('detail');
+
+    const density = resolveTraceRenderSettings(24, 'density');
+    expect(density.mode).toBe('density');
+    expect(density.holdAlpha).toBeGreaterThan(0.38);
+    expect(density.holdAlpha).toBeLessThan(0.46);
+    expect(density.recoilAlpha).toBeGreaterThan(0.38);
+    expect(density.recoilAlpha).toBeLessThan(0.46);
+    expect(density.pullAlpha).toBeGreaterThan(density.holdAlpha);
+    expect(density.pullAlpha).toBeGreaterThan(0.55);
+    expect(density.pullAlpha).toBeLessThan(0.65);
+    expect(density.lineWidth).toBeLessThan(detail.lineWidth);
+    expect(density.pointRadius).toBe(0);
+    expect(density.showPullMarkers).toBe(false);
+    expect(density.showShotMarkers).toBe(true);
+    expect(density.shotMarkerStyle).toBe('dot');
+    expect(density.shotMarkerAlpha).toBe(1);
+  });
+
   it('renders play button', () => {
     const shots = [{ pitch: [0,0], yaw: [0,0] }];
     const wrapper = mount(RawTraceVisualizer, { props: { shots }, global: { plugins: [PrimeVue] } });

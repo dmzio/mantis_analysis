@@ -28,6 +28,24 @@ async function uploadSessions(page, files) {
   await setTraceInput(page, samples);
 }
 
+function manyShotSessionPayload(baseFile, shotCount) {
+  const payload = JSON.parse(fs.readFileSync(sessionSamplePath(baseFile), "utf8"));
+  const session = payload.session;
+  const sourceShots = session.shots || [];
+  session.pk = 90000001;
+  session.shot_count = shotCount;
+  session.shots = Array.from({ length: shotCount }, (_, index) => ({
+    ...sourceShots[index % sourceShots.length],
+    pk: 9000000100 + index,
+    session_pk: session.pk
+  }));
+  return {
+    name: `data/many-${baseFile}`,
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(payload))
+  };
+}
+
 async function expectNoHorizontalOverflow(page, selector, label) {
   const { scrollWidth, clientWidth } = await page.evaluate(sel => {
     const target = document.querySelector(sel);
@@ -155,6 +173,21 @@ test("visualizer theming and controls", async ({ page }) => {
   await expect(page).toHaveURL(/#\/session\/\d+\/shot\/\d+/);
   await expect(page.locator('[data-testid="breadcrumb"]').first()).toBeVisible();
   await expect(page.locator('[data-testid="shot-details"]').first()).toBeVisible();
+});
+
+test("many-shot trace uses density mode by default", async ({ page }) => {
+  await page.goto("http://localhost:8765/");
+  await setTraceInput(page, [manyShotSessionPayload("11111027.json", 24)]);
+  await page.locator('[data-testid="session-table"] tbody tr .session-listing__link').first().click();
+  await expect(page).toHaveURL(/#\/session\//);
+
+  await expect(page.locator('[data-testid="trace-mode-density"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-testid="trace-mode-detail"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.trace-legend')).toContainText('brighter areas');
+
+  await page.locator('[data-testid="trace-mode-detail"]').click();
+  await expect(page.locator('[data-testid="trace-mode-detail"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-testid="trace-mode-density"]')).toHaveAttribute('aria-pressed', 'false');
 });
 
 test('averages view renders plots', async ({ page }) => {

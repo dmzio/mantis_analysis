@@ -42,6 +42,30 @@ interface TraceColorSet {
   ellipseStroke: string;
   lineWidth: number;
   pointRadius: number;
+  holdAlpha: number;
+  pullAlpha: number;
+  recoilAlpha: number;
+  showPullMarkers: boolean;
+  showShotMarkers: boolean;
+  shotMarkerStyle: 'cross' | 'dot';
+  shotMarkerAlpha: number;
+  showEllipses: boolean;
+}
+
+export type TraceRenderPreference = 'density' | 'detail';
+
+export interface TraceRenderSettings {
+  mode: 'density' | 'detail';
+  lineWidth: number;
+  pointRadius: number;
+  holdAlpha: number;
+  pullAlpha: number;
+  recoilAlpha: number;
+  showPullMarkers: boolean;
+  showShotMarkers: boolean;
+  shotMarkerStyle: 'cross' | 'dot';
+  shotMarkerAlpha: number;
+  showEllipses: boolean;
 }
 
 const DEFAULT_COLORS: TraceColorSet = {
@@ -53,10 +77,59 @@ const DEFAULT_COLORS: TraceColorSet = {
   ellipseFill: 'rgba(130,201,30,0.08)',
   ellipseStroke: '#ff334b',
   lineWidth: 2,
-  pointRadius: POINT_RADIUS
+  pointRadius: POINT_RADIUS,
+  holdAlpha: 1,
+  pullAlpha: 1,
+  recoilAlpha: 1,
+  showPullMarkers: true,
+  showShotMarkers: true,
+  shotMarkerStyle: 'cross',
+  shotMarkerAlpha: 1,
+  showEllipses: true
 };
 
 export type PrepareFn<T> = (shots: T[]) => ShotData[];
+
+const DENSITY_SHOT_THRESHOLD = 12;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+export function resolveTraceRenderSettings(
+  shotCount: number,
+  preference: TraceRenderPreference
+): TraceRenderSettings {
+  if (preference === 'detail' || shotCount < DENSITY_SHOT_THRESHOLD) {
+    return {
+      mode: 'detail',
+      lineWidth: DEFAULT_COLORS.lineWidth,
+      pointRadius: DEFAULT_COLORS.pointRadius,
+      holdAlpha: 1,
+      pullAlpha: 1,
+      recoilAlpha: 1,
+      showPullMarkers: true,
+      showShotMarkers: true,
+      shotMarkerStyle: 'cross',
+      shotMarkerAlpha: 1,
+      showEllipses: true
+    };
+  }
+
+  return {
+    mode: 'density',
+    lineWidth: clamp(1.15 - shotCount * 0.012, 0.75, 1.05),
+    pointRadius: 0,
+    holdAlpha: clamp(10 / shotCount, 0.16, 0.45),
+    pullAlpha: clamp(14 / shotCount, 0.28, 0.65),
+    recoilAlpha: clamp(10 / shotCount, 0.16, 0.45),
+    showPullMarkers: false,
+    showShotMarkers: true,
+    shotMarkerStyle: 'dot',
+    shotMarkerAlpha: 1,
+    showEllipses: false
+  };
+}
 
 export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, useMoa = false) {
   return defineComponent({
@@ -73,7 +146,12 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
       const playing = ref(false);
       const progress = ref(1);
       const sliderStep = ref(0.001);
+      const renderModePreference = ref<TraceRenderPreference | null>(null);
       const atEnd = computed(() => !playing.value && progress.value >= 0.999);
+      const selectedTraceMode = computed<TraceRenderPreference>(() => {
+        if (renderModePreference.value) return renderModePreference.value;
+        return props.shots.length >= DENSITY_SHOT_THRESHOLD ? 'density' : 'detail';
+      });
       const { activeStyle } = useTraceStyle();
 
       let scene: TraceScene | null = null;
@@ -143,7 +221,19 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
           .attr('preserveAspectRatio', 'xMidYMid meet');
       }
 
+      function traceRenderSettings(): TraceRenderSettings {
+        return resolveTraceRenderSettings(props.shots.length, selectedTraceMode.value);
+      }
+
+      function setTraceMode(mode: TraceRenderPreference) {
+        if (selectedTraceMode.value === mode && renderModePreference.value === mode) return;
+        renderModePreference.value = mode;
+        needsFullRedraw = true;
+        renderScene(true);
+      }
+
       function resolveColors(): TraceColorSet {
+        const renderSettings = traceRenderSettings();
         if (typeof window === 'undefined') return DEFAULT_COLORS;
         const target = stageRef.value ?? document.documentElement;
         const styles = window.getComputedStyle(target);
@@ -159,8 +249,16 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
           shotMarker: read('--marker-shot', DEFAULT_COLORS.shotMarker),
           ellipseFill: DEFAULT_COLORS.ellipseFill,
           ellipseStroke: read('--trace-trigger', DEFAULT_COLORS.ellipseStroke),
-          lineWidth: DEFAULT_COLORS.lineWidth,
-          pointRadius: DEFAULT_COLORS.pointRadius
+          lineWidth: renderSettings.lineWidth,
+          pointRadius: renderSettings.pointRadius,
+          holdAlpha: renderSettings.holdAlpha,
+          pullAlpha: renderSettings.pullAlpha,
+          recoilAlpha: renderSettings.recoilAlpha,
+          showPullMarkers: renderSettings.showPullMarkers,
+          showShotMarkers: renderSettings.showShotMarkers,
+          shotMarkerStyle: renderSettings.shotMarkerStyle,
+          shotMarkerAlpha: renderSettings.shotMarkerAlpha,
+          showEllipses: renderSettings.showEllipses
         };
       }
 
@@ -236,7 +334,8 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
         next: number,
         color: string,
         lineWidth: number,
-        pointRadius: number
+        pointRadius: number,
+        alpha: number
       ) {
         if (!ctx || buffer.length === 0) return;
         const safeNext = Math.max(0, next);
@@ -245,6 +344,8 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
         const coords = buffer;
         const startIndex = Math.max(safePrev - 1, 0);
         const endIndex = safeNext - 1;
+        ctx.save();
+        ctx.globalAlpha = alpha;
         if (endIndex > startIndex) {
           ctx.strokeStyle = color;
           ctx.lineWidth = lineWidth;
@@ -262,6 +363,7 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
           }
         }
         drawPoints(coords, safePrev, safeNext, color, pointRadius);
+        ctx.restore();
       }
 
       function drawPullMarker(point: [number, number] | null, colors: TraceColorSet) {
@@ -274,6 +376,16 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
 
       function drawShotMarker(point: [number, number] | null, colors: TraceColorSet) {
         if (!ctx || !point) return;
+        ctx.save();
+        ctx.globalAlpha = colors.shotMarkerAlpha;
+        if (colors.shotMarkerStyle === 'dot') {
+          ctx.fillStyle = colors.shotMarker;
+          ctx.beginPath();
+          ctx.arc(point[0], point[1], Math.max(2, colors.lineWidth + 1.2), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          return;
+        }
         ctx.strokeStyle = colors.shotMarker;
         ctx.lineWidth = colors.lineWidth + 0.5;
         ctx.beginPath();
@@ -282,6 +394,7 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
         ctx.moveTo(point[0] + SHOT_MARK_HALF, point[1] - SHOT_MARK_HALF);
         ctx.lineTo(point[0] - SHOT_MARK_HALF, point[1] + SHOT_MARK_HALF);
         ctx.stroke();
+        ctx.restore();
       }
 
       function applyCounts(targetCounts: SegmentCounts[], colors: TraceColorSet, drawStatics: boolean) {
@@ -290,26 +403,26 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
         scene.shots.forEach((shot, idx) => {
           const state = shotStates[idx];
           const counts = targetCounts[idx];
-          if (drawStatics) {
+          if (drawStatics && colors.showEllipses) {
             drawHoldEllipse(shot, colors);
           }
           if (shot.hold.length) {
-            drawSegmentDelta(shot.hold.coords, drawStatics ? 0 : state.hold, counts.hold, colors.hold, colors.lineWidth, colors.pointRadius);
+            drawSegmentDelta(shot.hold.coords, drawStatics ? 0 : state.hold, counts.hold, colors.hold, colors.lineWidth, colors.pointRadius, colors.holdAlpha);
             state.hold = counts.hold;
           }
           if (shot.pull.length) {
-            drawSegmentDelta(shot.pull.coords, drawStatics ? 0 : state.pull, counts.pull, colors.pull, colors.lineWidth, colors.pointRadius);
+            drawSegmentDelta(shot.pull.coords, drawStatics ? 0 : state.pull, counts.pull, colors.pull, colors.lineWidth, colors.pointRadius, colors.pullAlpha);
             state.pull = counts.pull;
           }
           if (shot.recoil.length) {
-            drawSegmentDelta(shot.recoil.coords, drawStatics ? 0 : state.recoil, counts.recoil, colors.recoil, colors.lineWidth, colors.pointRadius);
+            drawSegmentDelta(shot.recoil.coords, drawStatics ? 0 : state.recoil, counts.recoil, colors.recoil, colors.lineWidth, colors.pointRadius, colors.recoilAlpha);
             state.recoil = counts.recoil;
           }
-          if (shot.pullMarker && counts.showPullDot && (!state.pullMarker || drawStatics)) {
+          if (colors.showPullMarkers && shot.pullMarker && counts.showPullDot && (!state.pullMarker || drawStatics)) {
             drawPullMarker(shot.pullMarker, colors);
             state.pullMarker = true;
           }
-          if (shot.shotMarker && counts.showShotMark && (!state.shotMarker || drawStatics)) {
+          if (colors.showShotMarkers && shot.shotMarker && counts.showShotMark && (!state.shotMarker || drawStatics)) {
             drawShotMarker(shot.shotMarker, colors);
             state.shotMarker = true;
           }
@@ -499,6 +612,8 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
         stageRef,
         svgRef,
         canvasRef,
+        selectedTraceMode,
+        setTraceMode,
         toggle,
         play,
         pause,
@@ -511,6 +626,34 @@ export function createTraceVisualizer<T>(name: string, prepare: PrepareFn<T>, us
     template: `
       <div class="trace-visualizer">
         <h4 v-if="title">{{ title }}</h4>
+        <div class="trace-toolbar" aria-label="Trace display mode">
+          <div class="trace-mode-control">
+            <Button
+              label="Density"
+              size="small"
+              :severity="selectedTraceMode === 'density' ? 'secondary' : 'contrast'"
+              :outlined="selectedTraceMode !== 'density'"
+              :aria-pressed="selectedTraceMode === 'density'"
+              data-testid="trace-mode-density"
+              @click="setTraceMode('density')"
+            />
+            <Button
+              label="Detail"
+              size="small"
+              :severity="selectedTraceMode === 'detail' ? 'secondary' : 'contrast'"
+              :outlined="selectedTraceMode !== 'detail'"
+              :aria-pressed="selectedTraceMode === 'detail'"
+              data-testid="trace-mode-detail"
+              @click="setTraceMode('detail')"
+            />
+          </div>
+          <div class="trace-legend">
+            <span><i class="trace-legend__swatch trace-legend__swatch--hold"></i>Hold path</span>
+            <span><i class="trace-legend__swatch trace-legend__swatch--pull"></i>Pull</span>
+            <span><i class="trace-legend__swatch trace-legend__swatch--recoil"></i>Recoil</span>
+            <span>brighter areas = more overlapping shots</span>
+          </div>
+        </div>
         <div class="trace-stage" ref="stageRef">
           <svg ref="svgRef" class="trace-svg" data-testid="trace-svg"></svg>
           <canvas ref="canvasRef" class="trace-canvas" data-testid="trace-canvas"></canvas>

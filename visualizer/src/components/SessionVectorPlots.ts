@@ -1,5 +1,6 @@
 import { computed, defineComponent } from 'vue';
 import Chart from 'primevue/chart';
+import { RING_RADII_MM } from '../shotProcessor';
 
 interface VectorPoint {
   x: number;
@@ -130,6 +131,7 @@ function equalAspectScalePlugin(baseLimit: number) {
 function targetRingsPlugin() {
   return {
     id: 'target-rings',
+    targetRingRadiiMm: RING_RADII_MM,
     beforeDatasetsDraw(chart: any) {
       const xScale = chart.scales?.x;
       const yScale = chart.scales?.y;
@@ -139,18 +141,17 @@ function targetRingsPlugin() {
       const centerX = xScale.getPixelForValue(0);
       const centerY = yScale.getPixelForValue(0);
       if (centerX < left || centerX > right || centerY < top || centerY > bottom) return;
-      const limit = Math.min(Math.abs(xScale.max || 0), Math.abs(yScale.max || 0));
-      const step = limit > 40 ? 10 : 5;
       ctx.save();
       ctx.strokeStyle = 'rgba(150, 160, 200, 0.22)';
       ctx.lineWidth = 1;
       ctx.setLineDash([]);
-      for (let radius = step; radius <= limit; radius += step) {
+      RING_RADII_MM.forEach(radius => {
+        if (radius > Math.abs(xScale.max || 0) || radius > Math.abs(yScale.max || 0)) return;
         const radiusPx = Math.abs(xScale.getPixelForValue(radius) - centerX);
         ctx.beginPath();
         ctx.arc(centerX, centerY, radiusPx, 0, Math.PI * 2);
         ctx.stroke();
-      }
+      });
       ctx.strokeStyle = 'rgba(212, 218, 239, 0.35)';
       ctx.beginPath();
       ctx.moveTo(left, centerY);

@@ -1,4 +1,4 @@
-import { createTraceVisualizer } from './TraceVisualizerBase';
+import { createTraceVisualizer, resolveTraceRenderSettings } from './TraceVisualizerBase';
 import { ShotData } from '../traceUtils';
 import { getHoldCenter } from '../shotProcessor';
 
@@ -13,3 +13,4 @@ function prepare(shots: ShotData[]): ShotData[] {
 }
 
 export default createTraceVisualizer<ShotData>('RawTraceVisualizer', prepare, false);
+export { resolveTraceRenderSettings };

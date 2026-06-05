@@ -1008,6 +1008,57 @@ header {
   pointer-events: none;
 }
 
+.trace-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0 0.6rem;
+  flex-wrap: wrap;
+}
+
+.trace-mode-control {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.trace-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text-color) 68%, transparent);
+}
+
+.trace-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.trace-legend__swatch {
+  width: 0.75rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.trace-legend__swatch--hold {
+  background: var(--trace-hold);
+}
+
+.trace-legend__swatch--pull {
+  background: var(--trace-pull);
+}
+
+.trace-legend__swatch--recoil {
+  background: var(--trace-trigger);
+}
+
 .target-visual {
   isolation: isolate;
 }
@@ -1037,9 +1088,10 @@ header {
 }
 
 .target-ring-numerals {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
 }
 
 .target-ring-numeral {
@@ -1053,8 +1105,9 @@ header {
 }
 
 .ring-label {
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   fill: var(--ring);
+  opacity: 0.55;
   text-anchor: start;
 }
 
